@@ -14,9 +14,9 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
     if (! await this.writeRepository.find(writeId)) {
       return this.exceptionHandler.UndefinedId()
     }
-    let comments: CommentEntity[] = await this.commentRepository.getByWrite(writeId)
-    let authors: UserEntity[] = await this.commentRepository.loadAuthors(comments)
-    let finalComments: Partial<CommentEntity>[] = await estruturateCommentsWithAnswers(comments)
+    const comments: CommentEntity[] = await this.commentRepository.getByWrite(writeId)
+    const authors: UserEntity[] = await this.commentRepository.loadAuthors(comments)
+    const finalComments: Partial<CommentEntity>[] = await estruturateCommentsWithAnswers(comments)
     this.exceptionHandler.SucessfullyRecovered({ comments: finalComments, authors: authors })
   }
 
@@ -54,6 +54,7 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
     }
 
     const comment = await this.commentRepository.find(commentId)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { writeId, answerToId, ...safeBody } = body
 
     if (!comment) {
@@ -65,7 +66,7 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
     }
 
     const updatedComment = await this.commentRepository.update(commentId, {... safeBody, edited: true})
-    this.exceptionHandler.SucessfullyUpdated(updatedComment)
+    this.exceptionHandler.SucessfullyUpdated(updatedComment )
   }
 
 
@@ -85,7 +86,7 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
     }
 
     const deletedComment = await this.commentRepository.delete(commentId)
-    this.exceptionHandler.SucessfullyDestroyed(deletedComment)
+    this.exceptionHandler.SucessfullyDestroyed(deletedComment )
   }
 }
 

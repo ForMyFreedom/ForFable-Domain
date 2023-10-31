@@ -7,12 +7,12 @@ export type ProposalInsert = {
 
 
 export abstract class ProposalEntity {
-  id: number
-  writeId: WriteEntity['id']
-  promptId: PromptEntity['id']
-  orderInHistory: number
-  definitive: boolean
-  popularity: number // Good Reactions - Bad Reactions
+  id!: number
+  writeId!: WriteEntity['id']
+  promptId!: PromptEntity['id']
+  orderInHistory!: number
+  definitive!: boolean
+  popularity!: number // Good Reactions - Bad Reactions
 
   abstract getWrite(): Promise<WriteEntity>
   abstract getPrompt(): Promise<PromptEntity>

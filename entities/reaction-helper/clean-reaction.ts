@@ -4,7 +4,7 @@ export type ExibitionReaction = {type: ReactionType, amount: number}
 
 export function getExibitionReaction(reactions: ReactionEntity[]): ExibitionReaction[] {
   let cleanReactions: ExibitionReaction[] = getBruteExitionReactionList(reactions)
-  let positiveConclusive: number = getPositiveConclusiveReactionAmount(cleanReactions)
+  const positiveConclusive: number = getPositiveConclusiveReactionAmount(cleanReactions)
 
   cleanReactions = removeAllPositiveConclusive(cleanReactions)
   cleanReactions = solvePositiveAggregate(positiveConclusive, cleanReactions)

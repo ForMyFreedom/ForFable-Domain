@@ -10,22 +10,22 @@ export type UserUpdate = Pick<UserEntity,
 >
 
 export abstract class UserEntity {
-  id: number
-  name: string
-  nickname: string
-  imageUrl: string
-  isAdmin: boolean
-  isPremium: boolean
-  email: string
-  emailVerified: boolean
-  primaryColorHex: string
-  secondaryColorHex: string
-  score: number
-  birthDate: DateTime
-  password: string
-  createdAt: DateTime
-  updatedAt: DateTime
-  deletedAt: DateTime
+  id!: number
+  name!: string
+  nickname!: string
+  imageUrl!: string
+  isAdmin!: boolean
+  isPremium!: boolean
+  email!: string
+  emailVerified!: boolean
+  primaryColorHex!: string
+  secondaryColorHex!: string
+  score!: number
+  birthDate!: DateTime
+  password!: string
+  createdAt!: DateTime
+  updatedAt!: DateTime
+  deletedAt!: DateTime
 
   abstract softDelete(): Promise<void>
   abstract verifyBan(): Promise<void>
@@ -42,6 +42,8 @@ export abstract class UserEntity {
     user.score -= deleteStrength
   }
 }
+
+export type UserWithToken = { user: UserEntity, token: string}
 
 export type PasswordInsert = {
   password: string

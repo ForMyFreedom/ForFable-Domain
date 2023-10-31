@@ -87,7 +87,7 @@ export class ReactWritesService extends BaseHTTPService implements ReactWritesUs
     }
   }
 
-  async writeIsDaily(writeId: number): Promise<Boolean> {
+  async writeIsDaily(writeId: number): Promise<boolean> {
     const prompts = await this.promptRepository.findByWriteId(writeId)
     return !!prompts && prompts.isDaily
   }

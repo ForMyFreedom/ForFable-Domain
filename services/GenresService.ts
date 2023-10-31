@@ -1,5 +1,5 @@
 
-import { BaseHTTPService } from './BaseHTTPService'
+import { ApiResponse, BaseHTTPService, Pagination } from './BaseHTTPService'
 import { GenreEntity, GenreInsert } from '../entities'
 import { ThematicWordRepository, ExceptionHandler, GenresRepository } from '../contracts'
 import { GenresUsecase } from '../usecases'
@@ -11,34 +11,38 @@ export class GenresService extends BaseHTTPService implements GenresUsecase {
     public exceptionHandler: ExceptionHandler
   ) { super(exceptionHandler) }
 
-  public async store(body: GenreInsert): Promise<void> {
-    let { thematicWords, ...rest } = body
+  public async store(body: GenreInsert): Promise<ApiResponse<GenreEntity>> {
+    const { thematicWords, ...rest } = body
     const genre = await this.genreRepository.create(rest)
     await this.storeWordsToGenre(thematicWords, genre)
     this.exceptionHandler.SucessfullyCreated(genre)
+    return { data: genre }
   }
 
-  public async index(): Promise<void> {
-    this.exceptionHandler.SucessfullyRecovered(
-      await this.genreRepository.loadGenresWithWords()
-    )
+  public async index(): Promise<Pagination<GenreEntity>> {
+    const response = await this.genreRepository.loadGenresWithWords()
+    this.exceptionHandler.SucessfullyRecovered(response)
+    return response
   }
 
-  public async show(genreId: GenreEntity['id']): Promise<void> {
+  public async show(genreId: GenreEntity['id']): Promise<ApiResponse<GenreEntity>> {
     const genre = await this.genreRepository.find(genreId)
     if (!genre) {
       this.exceptionHandler.UndefinedId()
+      return { error: 'UndefinedId' }
     } else {
       this.exceptionHandler.SucessfullyRecovered(genre)
+      return { data: genre }
     }
   }
 
-  public async update(genreId: GenreEntity['id'], body: Partial<GenreInsert>): Promise<void> {
+  public async update(genreId: GenreEntity['id'], body: Partial<GenreInsert>): Promise<ApiResponse<GenreEntity>> {
     const { thematicWords, ...rest } = body
 
-    let genre = await this.genreRepository.find(genreId)
+    const genre = await this.genreRepository.find(genreId)
     if (!genre) {
       this.exceptionHandler.UndefinedId()
+      return { error: 'UndefinedId' }
     } else {
       await this.genreRepository.update(genreId, rest)
 
@@ -48,28 +52,33 @@ export class GenresService extends BaseHTTPService implements GenresUsecase {
       }
 
       this.exceptionHandler.SucessfullyUpdated(genre)
+      return { data: genre }
     }
   }
 
-  public async destroy(genreId: GenreEntity['id']): Promise<void> {
+  public async destroy(genreId: GenreEntity['id']): Promise<ApiResponse<GenreEntity>> {
     const genre = await this.genreRepository.find(genreId)
     if (!genre) {
       this.exceptionHandler.UndefinedId()
+      return { error: 'UndefinedId' }
     } else {
       await this.genreRepository.delete(genreId)
       this.exceptionHandler.SucessfullyDestroyed(genre)
+      return { data: genre }
     }
   }
 
-  public async storeWords(genreId: GenreEntity['id'], words: string[]): Promise<void> {
+  public async storeWords(genreId: GenreEntity['id'], words: string[]): Promise<ApiResponse<GenreEntity>> {
     const genre = await this.genreRepository.find(genreId)
 
     if (!genre) {
       this.exceptionHandler.UndefinedId()
+      return { error: 'UndefinedId' }
     } else {
       await this.storeWordsToGenre(words, genre)
       const updatedGenre = await this.genreRepository.find(genreId)
       this.exceptionHandler.SucessfullyCreated(updatedGenre)
+      return updatedGenre ? { data: updatedGenre } : { error:'InternalServerError' }
     }
   }
 

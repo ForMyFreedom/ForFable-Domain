@@ -17,17 +17,17 @@ export type GainControlOverDailyPromptInsert =
   Pick<PromptEntity, 'title'>
 
 export abstract class PromptEntity {
-  id: number
-  title: string
-  isDaily: boolean
-  currentIndex: number
-  concluded: boolean
-  writeId: WriteEntity['id']
-  maxSizePerExtension: number
-  limitOfExtensions: number
-  timeForAvanceInMinutes: number
-  popularity: number             // The amount of Users that had interacted with
-  historyText: string            // Not the prompt, but prompt + all proposals in order
+  id!: number
+  title!: string
+  isDaily!: boolean
+  currentIndex!: number
+  concluded!: boolean
+  writeId!: WriteEntity['id']
+  maxSizePerExtension!: number
+  limitOfExtensions!: number
+  timeForAvanceInMinutes!: number
+  popularity!: number             // The amount of Users that had interacted with
+  historyText!: string            // Not the prompt, but prompt + all proposals in order
 
   abstract getWrite(): Promise<WriteEntity>
   abstract getGenres(): Promise<GenreEntity[]>

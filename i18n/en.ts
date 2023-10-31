@@ -1,4 +1,4 @@
-import { ExceptionContract } from "for-fable-domain/contracts";
+import { ExceptionContract } from "../contracts";
 
 
 export const englishExceptionContract: ExceptionContract = {

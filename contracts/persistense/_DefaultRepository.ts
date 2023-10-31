@@ -1,4 +1,4 @@
-import { Pagination } from "for-fable-domain/services"
+import { Pagination } from "../../services"
 
 export interface DefaultRepository<TInsert, TEntity extends { id: number }> {
     find(entityId: TEntity['id']): Promise<TEntity|null>

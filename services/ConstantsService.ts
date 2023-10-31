@@ -20,6 +20,6 @@ export class ConstantsService extends BaseHTTPService implements ConstantsUsecas
       return this.exceptionHandler.ServerMisconfigured()
     }
     const updatedConfig = await this.constantsRepository.update(contant)
-    this.exceptionHandler.SucessfullyUpdated(updatedConfig)
+    this.exceptionHandler.SucessfullyUpdated(updatedConfig )
   }
 }

@@ -29,7 +29,8 @@ export class DailyPromptsService implements DailyPromptsUsecase {
 
   public async createDailyPromptsForEachGenre(): Promise<void> {
     const allGenres = await this.genreRepository.findAll()
-    for (const genre of allGenres.data) {
+    if(!allGenres.data) { return }
+    for (const genre of allGenres.data.all) {
       for (let i = 0; i < genre.popularity; i++) {
         const newWrite = await this.writeRepository.create({
           text: await this.getRandomText(genre),

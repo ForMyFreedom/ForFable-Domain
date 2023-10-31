@@ -8,14 +8,15 @@ export abstract class BaseHTTPService {
     ) { }
 }
 
-export type Pagination<T> = ApiResponse<T[]> & {
+export type Pagination<T> = ApiResponse<{
+  all: T[],
   meta: {
-      currentPage: number
-      firstPage: number
-      lastPage: number
-      totalItens: number
+    currentPage: number
+    firstPage: number
+    lastPage: number
+    totalItens: number
   }
-}
+}>
 
 export type ApiResponse<T> = {
   data?: T

@@ -7,12 +7,12 @@ export type GenreInsert = {
 } & Pick<GenreEntity, 'name'|'imageUrl'>
 
 export abstract class GenreEntity {
-  id: number
-  name: string
-  imageUrl: string
-  popularity: number // Amount of Prompts per day
-  createdAt: DateTime
-  updatedAt: DateTime
+  id!: number
+  name!: string
+  imageUrl!: string
+  popularity!: number // Amount of Prompts per day
+  createdAt!: DateTime
+  updatedAt!: DateTime
 
   abstract getPrompts(): Promise<PromptEntity[]>
   abstract getThematicWords(): Promise<ThematicWordEntity[]>

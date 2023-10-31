@@ -1,9 +1,8 @@
-import { ApiResponse, BaseHTTPService, GenericResponse } from './BaseHTTPService'
+import { ApiResponse, BaseHTTPService, GenericResponse, Pagination } from './BaseHTTPService'
 import { ExceptionContract, ExceptionHandler, TokenRepository, UserRepository } from '../contracts'
 import { RestartPasswordInsert, UserEntity, UserInsert, UserUpdate } from '../entities'
 import { MailUsecase, UsersUsecase } from '../usecases'
 import { prettifyErrorList } from '../utils'
-import { Pagination } from '@ioc:forfabledomain'
 
 export class UsersService extends BaseHTTPService implements UsersUsecase {
   constructor(

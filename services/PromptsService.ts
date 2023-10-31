@@ -1,4 +1,4 @@
-import { BaseHTTPService } from './BaseHTTPService'
+import { ApiResponse, BaseHTTPService, Pagination } from './BaseHTTPService'
 import { PromptEntity, PromptInsert, UserEntity, GenreEntity, GainControlOverDailyPromptInsert } from '../entities'
 import { ExceptionHandler, PromptRepository, WriteRepository, EventEmitter } from '../contracts'
 import { PromptsUsecase } from '../usecases'
@@ -12,53 +12,61 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
     public exceptionHandler: ExceptionHandler
   ) { super(exceptionHandler) }
 
-  public async index(): Promise<void> {
-    this.exceptionHandler.SucessfullyRecovered(
-      await this.promptsRepository.findAll()
-    )
+  public async index(): Promise<Pagination<PromptEntity>> {
+    const response = await this.promptsRepository.findAll()
+    this.exceptionHandler.SucessfullyRecovered(response)
+    return response
   }
 
-  public async show(promptId: PromptEntity['id']): Promise<void> {
+  public async show(promptId: PromptEntity['id']): Promise<ApiResponse<PromptEntity>> {
     const prompt = await this.promptsRepository.find(promptId)
     if (!prompt) {
       this.exceptionHandler.UndefinedId()
+      return { error: 'UndefinedId' }
     } else {
       this.exceptionHandler.SucessfullyRecovered(prompt)
+      return { data: prompt }
     }
   }
 
-  public async store(authorId: UserEntity['id'], body: PromptInsert): Promise<void> {
+  public async store(authorId: UserEntity['id'], body: PromptInsert): Promise<ApiResponse<PromptEntity>> {
     const { text, genreIds, ...rest } = body
     if(authorId) {
-      return this.exceptionHandler.UndefinedId()
+      this.exceptionHandler.UndefinedId()
+      return { error: 'UndefinedId' }
     }
     const write = await this.writeRepository.create({ text: text, authorId: authorId })
     const prompt = await this.promptsRepository.create({ ...rest, writeId: write.id })
 
     if (! await this.couldSetGenres(prompt, genreIds)) {
       await this.promptsRepository.delete(prompt.id)
-      return this.exceptionHandler.InvalidGenre()      
+      this.exceptionHandler.InvalidGenre()
+      return { error: 'InvalidGenre' }
     }
 
     await this.eventEmitter.emitRunPromptEvent(prompt)
     this.exceptionHandler.SucessfullyCreated(prompt)
+    return { data: prompt }
   }
 
-  public async update(userId: UserEntity['id']|undefined, promptId: PromptEntity['id'], partialPrompt: Partial<PromptInsert>): Promise<void> {
+  public async update(userId: UserEntity['id']|undefined, promptId: PromptEntity['id'], partialPrompt: Partial<PromptInsert>): Promise<ApiResponse<PromptEntity>> {
     const { text, limitOfExtensions, genreIds, ...rest } = partialPrompt
     const prompt = await this.promptsRepository.find(promptId)
     if (!prompt) {
-      return this.exceptionHandler.UndefinedId()
+      this.exceptionHandler.UndefinedId()
+      return { error: 'UndefinedId' }
     }
     const write = await prompt.getWrite()
 
 
     if (write.authorId !== userId) {
-      return this.exceptionHandler.CantEditOthersWrite()
+      this.exceptionHandler.CantEditOthersWrite()
+      return { error: 'CantEditOthersWrite' }
     }
 
     if (prompt.isDaily) {
-      return this.exceptionHandler.CantEditDailyPrompt()
+      this.exceptionHandler.CantEditDailyPrompt()
+      return { error: 'CantEditDailyPrompt' }
     }
 
     if (prompt.currentIndex === 0) {
@@ -73,49 +81,57 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
       if (genreIds && genreIds.length > 0) {
         await this.promptsRepository.removeAllGenresFromPrompt(prompt)
         if (!(await this.couldSetGenres(prompt, genreIds))) {
-          return this.exceptionHandler.InvalidGenre()
+          this.exceptionHandler.InvalidGenre()
+          return { error: 'InvalidGenre' }
         }
       }
     }
 
     this.promptsRepository.update(promptId, rest)
     this.exceptionHandler.SucessfullyUpdated(prompt)
+    return { data: prompt }
   }
 
-  public async destroy(userId: UserEntity['id']|undefined, promptId: PromptEntity['id']): Promise<void> {
+  public async destroy(userId: UserEntity['id']|undefined, promptId: PromptEntity['id']): Promise<ApiResponse<PromptEntity>> {
     const prompt = await this.promptsRepository.find(promptId)
     if (!prompt) {
-      return this.exceptionHandler.UndefinedId()
+      this.exceptionHandler.UndefinedId()
+      return { error: 'UndefinedId' }
     }
 
     if((await prompt.getWrite()).authorId == userId) {
-      this.exceptionHandler.SucessfullyDestroyed(
-        await this.promptsRepository.delete(promptId)
-      )
+      const response = await this.promptsRepository.delete(promptId)
+      this.exceptionHandler.SucessfullyDestroyed(response)
+      return response ? { data: response } : { error: 'UndefinedId' }
     } else {
       this.exceptionHandler.CantDeleteOthersWrite()
+      return { error: 'CantDeleteOthersWrite' }
     }
   }
 
-  public async appropriateDailyPrompt(userId: UserEntity['id']|undefined, promptId: PromptEntity['id'], body: GainControlOverDailyPromptInsert): Promise<void> {
+  public async appropriateDailyPrompt(userId: UserEntity['id']|undefined, promptId: PromptEntity['id'], body: GainControlOverDailyPromptInsert): Promise<ApiResponse<PromptEntity>> {
     if (!userId) {
-      return this.exceptionHandler.Unauthenticated()
+      this.exceptionHandler.Unauthenticated()
+      return { error: 'Unauthenticated' }
     }
 
     const prompt = await this.promptsRepository.find(promptId)
 
     if (!prompt) {
-      return this.exceptionHandler.UndefinedId()
+      this.exceptionHandler.UndefinedId()
+      return { error: 'UndefinedId' }
     }
 
     const write = await prompt.getWrite()
 
     if (!prompt.isDaily || write.authorId !== null) {
-      return this.exceptionHandler.NotAppropriablePrompt()
+      this.exceptionHandler.NotAppropriablePrompt()
+      return { error: 'NotAppropriablePrompt' }
     }
 
     if (!this.textRespectPrompt(body.text, write.text)) {
-      return this.exceptionHandler.TextDontRespectPrompt()
+      this.exceptionHandler.TextDontRespectPrompt()
+      return { error: 'TextDontRespectPrompt' }
     }
 
     write.authorId = userId
@@ -125,6 +141,7 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
     await this.promptsRepository.update(prompt.id, prompt)
     await this.writeRepository.update(write.id, write)
     this.exceptionHandler.SucessfullyUpdated(prompt)
+    return { data: prompt }
   }
 
   private async couldSetGenres(prompt: PromptEntity, genreIds: GenreEntity['id'][]): Promise<boolean> {

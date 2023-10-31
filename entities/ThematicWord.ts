@@ -6,11 +6,11 @@ export type ThematicWordInsert = {
 } & Pick<ThematicWordEntity, 'genreId'>
 
 export abstract class ThematicWordEntity {
-  id: number
-  text: string
-  genreId: GenreEntity['id']
-  createdAt: DateTime
-  updatedAt: DateTime
+  id!: number
+  text!: string
+  genreId!: GenreEntity['id']
+  createdAt!: DateTime
+  updatedAt!: DateTime
 
   abstract getGenre(): Promise<GenreEntity>
 }

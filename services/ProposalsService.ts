@@ -98,7 +98,7 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
       proposal.id, partialBody
     )
     
-    this.exceptionHandler.SucessfullyUpdated(newProposal)
+    this.exceptionHandler.SucessfullyUpdated(newProposal )
   }
 
   public async destroy(userId: UserEntity['id']|undefined, proposalId: ProposalEntity['id']): Promise<void> {

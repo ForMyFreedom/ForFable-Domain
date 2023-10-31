@@ -15,11 +15,11 @@ export enum ReactionType {
 }
 
 export abstract class ReactionEntity {
-  id: number
-  userId: UserEntity['id']
-  type: ReactionType
-  createdAt: DateTime
-  updatedAt: DateTime
+  id!: number
+  userId!: UserEntity['id']
+  type!: ReactionType
+  createdAt!: DateTime
+  updatedAt!: DateTime
 
   abstract getTargetId(): number
   abstract getTarget(): Promise<InteractionEntity>
@@ -50,7 +50,7 @@ export abstract class ReactionEntity {
 }
 
 export abstract class CommentReactionEntity extends ReactionEntity {
-  commentId: CommentEntity['id']
+  commentId!: CommentEntity['id']
 
   abstract getComment(): Promise<CommentEntity>
 
@@ -61,7 +61,7 @@ export abstract class CommentReactionEntity extends ReactionEntity {
 }
 
 export abstract class WriteReactionEntity extends ReactionEntity {
-  writeId: WriteEntity['id']
+  writeId!: WriteEntity['id']
 
   abstract getWrite(): Promise<WriteEntity>
 

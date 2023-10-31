@@ -46,5 +46,5 @@ export interface ExceptionContract {
 }
 
 export type ExceptionHandler = {
-  [Prop in keyof ExceptionContract]: (body?: any) => void
+  [Prop in keyof ExceptionContract]: (body?: object|null) => void
 }

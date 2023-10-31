@@ -49,7 +49,7 @@ export class StoryAdvanceService implements StoryAdvanceUsecase {
   }
 
 
-  async storyWasConcluded(prompt: PromptEntity, chosenProposal: ProposalEntity): Promise<Boolean> {
+  async storyWasConcluded(prompt: PromptEntity, chosenProposal: ProposalEntity): Promise<boolean> {
     return (
       prompt.currentIndex === prompt.limitOfExtensions ||
       (await this.chosenProposalWasConclusive(prompt, chosenProposal))

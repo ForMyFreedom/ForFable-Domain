@@ -1,4 +1,4 @@
-import { ApiResponse, GenericResponse, Pagination } from 'for-fable-domain/services'
+import { ApiResponse, GenericResponse, Pagination } from '../services'
 import { ExceptionContract } from '../contracts'
 import { RestartPasswordInsert, UserEntity, UserInsert } from '../entities'
 
@@ -13,7 +13,10 @@ export interface UsersUsecase {
   restartPassword(langContract: ExceptionContract, token: string|undefined, body: RestartPasswordInsert): Promise<GenericResponse>
 }
 
-export interface UsersController extends Omit<UsersUsecase, 'store'> {
+export interface UsersController extends Omit<UsersUsecase, 'store'|'update'|'destroy'|'restartPassword'> {
   storeAdmin(body: UserInsert): Promise<ApiResponse<UserEntity>>
   storeUser(body: UserInsert): Promise<ApiResponse<UserEntity>>
+  update(userId: UserEntity['id'], partialBody: Partial<UserInsert>): Promise<ApiResponse<UserEntity>>
+  destroy(userId: UserEntity['id']): Promise<ApiResponse<UserEntity>>
+  restartPassword(token: string|undefined, body: RestartPasswordInsert): Promise<GenericResponse>
 }

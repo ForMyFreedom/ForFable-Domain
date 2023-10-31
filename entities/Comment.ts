@@ -9,15 +9,15 @@ export type CommentInsert = Pick<CommentEntity,
 >
 
 export abstract class CommentEntity implements InteractionEntity {
-  id: number
-  writeId: WriteEntity['id']
-  authorId: UserEntity['id']
-  answerToId: CommentEntity['id'] | null
-  imageUrl: string | null
-  text: string
-  edited: boolean
-  createdAt: DateTime
-  updatedAt: DateTime
+  id!: number
+  writeId!: WriteEntity['id']
+  authorId!: UserEntity['id']
+  answerToId!: CommentEntity['id'] | null
+  imageUrl!: string | null
+  text!: string
+  edited!: boolean
+  createdAt!: DateTime
+  updatedAt!: DateTime
 
   abstract getWrite(): Promise<WriteEntity>
   abstract getReactions(): Promise<CommentReactionEntity[]>
