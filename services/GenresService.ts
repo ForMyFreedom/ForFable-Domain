@@ -19,8 +19,8 @@ export class GenresService extends BaseHTTPService implements GenresUsecase {
     return { data: genre }
   }
 
-  public async index(): Promise<Pagination<GenreEntity>> {
-    const response = await this.genreRepository.loadGenresWithWords()
+  public async index(page?: number, limit?: number): Promise<Pagination<GenreEntity>> {
+    const response = await this.genreRepository.loadGenresWithWords(page, limit)
     this.exceptionHandler.SucessfullyRecovered(response)
     return response
   }
