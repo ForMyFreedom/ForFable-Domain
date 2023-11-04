@@ -27,7 +27,7 @@ export class GenresService extends BaseHTTPService implements GenresUsecase {
   public async show(genreId: GenreEntity['id']): Promise<ApiResponse<GenreEntity>> {
     const genre = await this.genreRepository.find(genreId)
     if (!genre) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     } else {
       return this.responseHandler.SucessfullyRecovered(genre)
     }
@@ -38,7 +38,7 @@ export class GenresService extends BaseHTTPService implements GenresUsecase {
 
     const genre = await this.genreRepository.find(genreId)
     if (!genre) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     } else {
       await this.genreRepository.update(genreId, rest)
 
@@ -54,7 +54,7 @@ export class GenresService extends BaseHTTPService implements GenresUsecase {
   public async destroy(genreId: GenreEntity['id']): Promise<ApiResponse<GenreEntity>> {
     const genre = await this.genreRepository.find(genreId)
     if (!genre) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     } else {
       await this.genreRepository.delete(genreId)
       return this.responseHandler.SucessfullyDestroyed(genre)
@@ -65,7 +65,7 @@ export class GenresService extends BaseHTTPService implements GenresUsecase {
     const genre = await this.genreRepository.find(genreId)
 
     if (!genre) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     } else {
       await this.storeWordsToGenre(words, genre)
       const updatedGenre = await this.genreRepository.find(genreId)

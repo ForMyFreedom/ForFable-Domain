@@ -14,7 +14,7 @@ export class ReactCommentsService extends BaseHTTPService implements ReactCommen
     const comment = await this.commentRepository.find(commentId)
     
     if (!comment) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
 
     const bruteReactions =
@@ -26,20 +26,20 @@ export class ReactCommentsService extends BaseHTTPService implements ReactCommen
 
   public async store(userId: UserEntity['id']|undefined, body: CommentReactionInsert): Promise<ApiResponse<CommentReactionEntity>> {
     if (!userId) {
-      return this.responseHandler.InvalidUser<object>()
+      return this.responseHandler.InvalidUser()
     }
 
     const comment = await this.commentRepository.find(body.commentId)
     if (!comment) {
-      return this.responseHandler.NotFound<object>()
+      return this.responseHandler.NotFound()
     }
 
     if (comment.authorId == userId) {
-      return this.responseHandler.CantReactYourself<object>()
+      return this.responseHandler.CantReactYourself()
     }
 
     if (ReactionEntity.reactionIsConclusive(body.type)) {
-      return this.responseHandler.CantUseConclusiveReactionInComment<object>()
+      return this.responseHandler.CantUseConclusiveReactionInComment()
     }
 
     const couldFind = await this.reactCommentRepository.getCertainReaction(
@@ -59,7 +59,7 @@ export class ReactCommentsService extends BaseHTTPService implements ReactCommen
 
   public async destroy(userId: UserEntity['id']|undefined, reactCommentId: CommentReactionEntity['id']): Promise<ApiResponse<CommentReactionEntity>> {
     if (!userId) {
-      return this.responseHandler.Unauthenticated<object>()
+      return this.responseHandler.Unauthenticated()
     }
 
     const reaction = await this.reactCommentRepository.find(reactCommentId)
@@ -68,10 +68,10 @@ export class ReactCommentsService extends BaseHTTPService implements ReactCommen
         await this.reactCommentRepository.delete(reactCommentId)
         return this.responseHandler.SucessfullyDestroyed(reaction)
       } else {
-        return this.responseHandler.CantDeleteOthersReaction<object>()
+        return this.responseHandler.CantDeleteOthersReaction()
       }
     } else {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
   }
 }

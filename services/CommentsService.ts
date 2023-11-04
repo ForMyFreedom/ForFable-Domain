@@ -13,12 +13,12 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
 
   public async indexByWrite(writeId: WriteEntity['id'], page?: number, limit?: number): Promise<ApiResponse<EstruturatedCommentsWithAnswers>> {
     if (! await this.writeRepository.find(writeId)) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
     const comments = await this.commentRepository.getByWrite(writeId, page, limit)
     const commentsArray = comments.data?.all
     if(!commentsArray){
-      return this.responseHandler.InternalServerError<object>()
+      return this.responseHandler.InternalServerError()
     }
     const authors: UserEntity[] = await this.commentRepository.loadAuthors(commentsArray)
     const finalComments: Partial<CommentEntity>[] = await estruturateCommentsWithAnswers(commentsArray)
@@ -29,21 +29,21 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
 
   public async store(user: UserEntity|undefined, body: CommentInsert): Promise<ApiResponse<CommentEntity>> {
     if (!user) {
-      return this.responseHandler.Unauthenticated<object>()
+      return this.responseHandler.Unauthenticated()
     }
 
     if(! await this.writeRepository.find(body.writeId)) {
-      return this.responseHandler.UndefinedWrite<object>()
+      return this.responseHandler.UndefinedWrite()
     }
 
     if (body.answerToId) {
       const toAnswer = await this.commentRepository.find(body.answerToId)
       if(!toAnswer){
-        return this.responseHandler.UndefinedComment<object>()
+        return this.responseHandler.UndefinedComment()
       }
 
       if(toAnswer.writeId !== body.writeId) {
-        return this.responseHandler.IncompatibleWriteAndAnswer<object>()
+        return this.responseHandler.IncompatibleWriteAndAnswer()
       }
     }
 
@@ -56,7 +56,7 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
 
   public async update(userId: UserEntity['id']|undefined, commentId: CommentEntity['id'], body: Partial<CommentInsert>): Promise<ApiResponse<CommentEntity>> {
     if (!userId) {
-      return this.responseHandler.Unauthenticated<object>()
+      return this.responseHandler.Unauthenticated()
     }
 
     const comment = await this.commentRepository.find(commentId)
@@ -64,11 +64,11 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
     const { writeId, answerToId, ...safeBody } = body
 
     if (!comment) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
 
     if (comment.authorId !== userId) {
-      return this.responseHandler.CantEditOthersWrite<object>()
+      return this.responseHandler.CantEditOthersWrite()
     }
 
     const updatedComment = await this.commentRepository.update(commentId, {... safeBody, edited: true})
@@ -78,17 +78,17 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
 
   public async destroy(userId: UserEntity['id']|undefined, commentId: CommentEntity['id']): Promise<ApiResponse<CommentEntity>> {
     if (!userId) {
-      return this.responseHandler.Unauthenticated<object>()
+      return this.responseHandler.Unauthenticated()
     }
 
     const comment = await this.commentRepository.find(commentId)
 
     if (!comment) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
 
     if (comment.authorId !== userId) {
-      return this.responseHandler.CantDeleteOthersWrite<object>()
+      return this.responseHandler.CantDeleteOthersWrite()
     }
 
     const deletedComment = await this.commentRepository.delete(commentId)

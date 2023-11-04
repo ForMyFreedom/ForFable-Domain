@@ -14,19 +14,19 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
   public async indexByPrompt(promptId: PromptEntity['id']): Promise<Pagination<ProposalEntity>> {
     const prompt = await this.promptRepository.find(promptId)
     if (!prompt) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
     const proposals = await this.proposalsRepository.getProposalsByPrompt(promptId)
-    return this.responseHandler.SucessfullyRecovered<Pagination<ProposalEntity>>(proposals)
+    return this.responseHandler.SucessfullyRecovered<Pagination<ProposalEntity>['data']>(proposals.data)
   }
 
   public async actualIndexByPrompt(promptId: PromptEntity['id']): Promise<Pagination<ProposalEntity>> {
     const prompt = await this.promptRepository.find(promptId)
     if (!prompt) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
     const proposals = await this.proposalsRepository.getIndexedProposalsByPrompt(promptId, prompt.currentIndex)
-    return this.responseHandler.SucessfullyRecovered(proposals)
+    return this.responseHandler.SucessfullyRecovered<Pagination<ProposalEntity>['data']>(proposals.data)
   }
 
   public async show(proposalId: ProposalEntity['id']): Promise<ApiResponse<ProposalEntity>> {
@@ -34,34 +34,34 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
     if (proposal) {
       return this.responseHandler.SucessfullyRecovered(proposal)
     } else {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
   }
 
   public async store(userId: UserEntity['id']|undefined, body: ProposalInsert ): Promise<ApiResponse<ProposalEntity>> {
     if (!userId) {
-      return this.responseHandler.InvalidUser<object>()
+      return this.responseHandler.InvalidUser()
     }
 
     const { text, promptId } = body
     const prompt = await this.promptRepository.find(promptId)
 
     if (!prompt) {
-      return this.responseHandler.UndefinedWrite<object>()
+      return this.responseHandler.UndefinedWrite()
     }
 
     const promptWrite = await this.promptRepository.getWrite(prompt)
 
     if (prompt.concluded) {
-      return this.responseHandler.CantProposeToClosedHistory<object>()
+      return this.responseHandler.CantProposeToClosedHistory()
     }
 
     if (prompt.isDaily && promptWrite.authorId === null) {
-      return this.responseHandler.CantProposeToUnappropriatedPrompt<object>()
+      return this.responseHandler.CantProposeToUnappropriatedPrompt()
     }
 
     if (prompt.maxSizePerExtension < text.length) {
-      return this.responseHandler.TextLengthHigherThanAllowed<object>()
+      return this.responseHandler.TextLengthHigherThanAllowed()
     }
 
     const finalText = insertSpaceInStartOfText(text)
@@ -81,17 +81,17 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
 
   public async update(userId: UserEntity['id']|undefined, proposalId: ProposalEntity['id'], partialBody: Partial<ProposalInsert>): Promise<ApiResponse<ProposalEntity>> {
     if (!userId) {
-      return this.responseHandler.Unauthenticated<object>()
+      return this.responseHandler.Unauthenticated()
     }
   
     const proposal = await this.proposalsRepository.find(proposalId)
     if (!proposal) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
     const writeProposal = await this.proposalsRepository.getWrite(proposal)
 
     if (writeProposal.authorId !== userId) {
-      return this.responseHandler.CantEditOthersWrite<object>()
+      return this.responseHandler.CantEditOthersWrite()
     }
 
     const newProposal = await this.proposalsRepository.update(
@@ -105,7 +105,7 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
     const proposal = await this.proposalsRepository.find(proposalId)
 
     if (!proposal) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
 
     const proposalWrite = await this.proposalsRepository.getWrite(proposal)
@@ -114,13 +114,13 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
       await this.proposalsRepository.delete(proposalId)
       return this.responseHandler.SucessfullyDestroyed(proposal)
     } else {
-      return this.responseHandler.CantDeleteOthersWrite<object>()
+      return this.responseHandler.CantDeleteOthersWrite()
     }
   }
 
   public async indexByAuthor(authorId: number, page?: number | undefined, limit?: number | undefined): Promise<Pagination<ProposalEntity>> {
     const response = await this.proposalsRepository.getProposalsByAuthor(authorId, page, limit)
-    return this.responseHandler.SucessfullyRecovered(response)
+    return this.responseHandler.SucessfullyRecovered<Pagination<ProposalEntity>['data']>(response.data)
   }
 }
 

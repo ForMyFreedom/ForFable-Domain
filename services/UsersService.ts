@@ -23,7 +23,7 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
     if (user) {
       return this.responseHandler.SucessfullyRecovered(user)
     } else {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
   }
 
@@ -46,12 +46,12 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
 
   public async update(responserId: UserEntity['id']|undefined, userId: UserEntity['id'], partialBody: Partial<UserUpdate>): Promise<ApiResponse<UserEntity>> {
     if (!responserId) {
-      return this.responseHandler.Unauthenticated<object>()
+      return this.responseHandler.Unauthenticated()
     }
     const user = await this.userRepository.find(userId)
 
     if (!user) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
 
     if (responserId === user.id) {
@@ -61,38 +61,38 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
       const response = await this.userRepository.update(user.id, finalBody)
       return this.responseHandler.SucessfullyUpdated(response)
     } else {
-      return this.responseHandler.CantEditOtherUser<object>()
+      return this.responseHandler.CantEditOtherUser()
     }
   }
 
   public async destroy(responserId: UserEntity['id']|undefined, userId: UserEntity['id']): Promise<ApiResponse<UserEntity>> {
     if (!responserId) {
-      return this.responseHandler.Unauthenticated<object>()
+      return this.responseHandler.Unauthenticated()
     }
 
     const user = await this.userRepository.find(userId)
 
     if (!user) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
 
     if (user.id === responserId) {
       await this.userRepository.softDelete(user.id)
       return this.responseHandler.SucessfullyDestroyed(user)
     } else {
-      return this.responseHandler.CantDeleteOtherUser<object>()
+      return this.responseHandler.CantDeleteOtherUser()
     }
   }
 
   public async verifyEmail(token: string|undefined): Promise<ApiResponse<boolean>> {
     if (!token) {
-      return this.responseHandler.BadRequest<object>()
+      return this.responseHandler.BadRequest()
     }
 
     const findToken = await this.tokenRepository.findByToken(token) 
 
     if (!findToken) {
-      return this.responseHandler.Unauthenticated<object>()
+      return this.responseHandler.Unauthenticated()
     }
 
     const user = await this.tokenRepository.getUser(findToken.id)
@@ -100,15 +100,15 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
     await this.userRepository.update(user.id, user)
     await this.tokenRepository.delete(findToken.id)
 
-    return this.responseHandler.SuccessfullyAuthenticated<object>()
+    return this.responseHandler.SuccessfullyAuthenticated()
   }
 
   public async requestPasswordChange(user: UserEntity|undefined): Promise<ApiResponse<EmailSended>> {
     if (!user) {
-      return this.responseHandler.Unauthenticated<object>()
+      return this.responseHandler.Unauthenticated()
     }
     const response = await this.mailService.sendUserResetPasswordMail(user)
-    return this.responseHandler.EmailSended(response)
+    return this.responseHandler.EmailSended(response.data)
   }
 
   public async restartPassword(langContract: ExceptionContract, token: string|undefined, body: RestartPasswordInsert): Promise<GenericResponse> {

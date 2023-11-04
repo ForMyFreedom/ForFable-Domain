@@ -21,7 +21,7 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
   public async show(promptId: PromptEntity['id']): Promise<ApiResponse<PromptEntity>> {
     const prompt = await this.promptsRepository.find(promptId)
     if (!prompt) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     } else {
       return this.responseHandler.SucessfullyRecovered(prompt)
     }
@@ -30,14 +30,14 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
   public async store(authorId: UserEntity['id'], body: PromptInsert): Promise<ApiResponse<PromptEntity>> {
     const { text, genreIds, ...rest } = body
     if(!authorId) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
     const write = await this.writeRepository.create({ text: text, authorId: authorId })
     const prompt = await this.promptsRepository.create({ ...rest, writeId: write.id })
 
     if (! await this.couldSetGenres(prompt, genreIds)) {
       await this.promptsRepository.delete(prompt.id)
-      return this.responseHandler.InvalidGenre<object>()
+      return this.responseHandler.InvalidGenre()
     }
 
     await this.eventEmitter.emitRunPromptEvent(prompt)
@@ -48,17 +48,17 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
     const { text, limitOfExtensions, genreIds, ...rest } = partialPrompt
     const prompt = await this.promptsRepository.find(promptId)
     if (!prompt) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
     const write = await this.promptsRepository.getWrite(prompt)
 
 
     if (write.authorId !== userId) {
-      return this.responseHandler.CantEditOthersWrite<object>()
+      return this.responseHandler.CantEditOthersWrite()
     }
 
     if (prompt.isDaily) {
-      return this.responseHandler.CantEditDailyPrompt<object>()
+      return this.responseHandler.CantEditDailyPrompt()
     }
 
     if (prompt.currentIndex === 0) {
@@ -73,7 +73,7 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
       if (genreIds && genreIds.length > 0) {
         await this.promptsRepository.removeAllGenresFromPrompt(prompt)
         if (!(await this.couldSetGenres(prompt, genreIds))) {
-          return this.responseHandler.InvalidGenre<object>()
+          return this.responseHandler.InvalidGenre()
         }
       }
     }
@@ -85,36 +85,36 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
   public async destroy(userId: UserEntity['id']|undefined, promptId: PromptEntity['id']): Promise<ApiResponse<PromptEntity>> {
     const prompt = await this.promptsRepository.find(promptId)
     if (!prompt) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
 
     if((await this.promptsRepository.getWrite(prompt)).authorId == userId) {
       const response = await this.promptsRepository.delete(promptId)
       return this.responseHandler.SucessfullyDestroyed(response)
     } else {
-      return this.responseHandler.CantDeleteOthersWrite<object>()
+      return this.responseHandler.CantDeleteOthersWrite()
     }
   }
 
   public async appropriateDailyPrompt(userId: UserEntity['id']|undefined, promptId: PromptEntity['id'], body: GainControlOverDailyPromptInsert): Promise<ApiResponse<PromptEntity>> {
     if (!userId) {
-      return this.responseHandler.Unauthenticated<object>()
+      return this.responseHandler.Unauthenticated()
     }
 
     const prompt = await this.promptsRepository.find(promptId)
 
     if (!prompt) {
-      return this.responseHandler.UndefinedId<object>()
+      return this.responseHandler.UndefinedId()
     }
 
     const write = await this.promptsRepository.getWrite(prompt)
 
     if (!prompt.isDaily || write.authorId !== null) {
-      return this.responseHandler.NotAppropriablePrompt<object>()
+      return this.responseHandler.NotAppropriablePrompt()
     }
 
     if (!this.textRespectPrompt(body.text, write.text)) {
-      return this.responseHandler.TextDontRespectPrompt<object>()
+      return this.responseHandler.TextDontRespectPrompt()
     }
 
     write.authorId = userId
@@ -128,7 +128,7 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
 
   public async indexByAuthor(authorId: number, page?: number, limit?: number): Promise<Pagination<PromptEntity>> {
     const response = await this.promptsRepository.findAllByAuthor(authorId, page, limit)
-    return this.responseHandler.SucessfullyRecovered(response)
+    return this.responseHandler.SucessfullyRecovered<Pagination<PromptEntity>['data']>(response.data)
   }
 
   private async couldSetGenres(prompt: PromptEntity, genreIds: GenreEntity['id'][]): Promise<boolean> {

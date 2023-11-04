@@ -20,10 +20,10 @@ export class LoginService extends BaseHTTPService implements LoginUsecase {
         const response = {user: user, token: token}
         return this.responseHandler.SuccessfullyAuthenticated(response)
       } else {
-        return this.responseHandler.BadRequest<object>()
+        return this.responseHandler.BadRequest()
       }
     } else {
-      return this.responseHandler.Unauthenticated<object>()
+      return this.responseHandler.Unauthenticated()
     }
   }
 }

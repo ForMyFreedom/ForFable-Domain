@@ -47,5 +47,5 @@ export interface ExceptionContract {
 }
 
 export type ResponseHandler = {
-  [Prop in keyof ExceptionContract]: <T>(body?: T|null) => T extends ApiResponse<object> ? T : ApiResponse<T>
+  [Prop in keyof ExceptionContract]: <T>(body?: T|null) => ApiResponse<T>
 }

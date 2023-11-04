@@ -18,7 +18,7 @@ export class ConstantsService extends BaseHTTPService implements ConstantsUsecas
   public async update(contant: Partial<ConstantEntity>): Promise<ApiResponse<ConstantEntity>> {
     const theConfig = await this.constantsRepository.getConfig()
     if(!theConfig){
-      return this.responseHandler.ServerMisconfigured<object>()
+      return this.responseHandler.ServerMisconfigured()
     }
     const updatedConfig = await this.constantsRepository.update(contant)
     return this.responseHandler.SucessfullyUpdated(updatedConfig)
