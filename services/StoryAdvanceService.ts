@@ -21,7 +21,7 @@ export class StoryAdvanceService implements StoryAdvanceUsecase {
     const prompt = await this.promptRepository.find(promptId)
     if (!prompt || prompt.concluded) { return NOT_CONTINUE }
 
-    const proposals = await prompt.getProposals()
+    const proposals = await this.promptRepository.getProposals(prompt.id)
     if (no(proposals)) { return CONTINUE }
 
     const currentProposals = proposals.filter(proposal => proposal.orderInHistory === prompt.currentIndex)

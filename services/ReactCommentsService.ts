@@ -1,5 +1,5 @@
 import { BaseHTTPService } from "./BaseHTTPService"
-import { CommentReactionEntity, CommentEntity, CommentReactionInsert, UserEntity, getExibitionReaction, reactionIsConclusive } from '../entities'
+import { CommentReactionEntity, CommentEntity, CommentReactionInsert, UserEntity, getExibitionReaction, ReactionEntity } from '../entities'
 import { CommentRepository, ExceptionHandler, ReactCommentRepository } from '../contracts'
 import { ReactCommentsUsecase } from '../usecases'
 
@@ -38,7 +38,7 @@ export class ReactCommentsService extends BaseHTTPService implements ReactCommen
       return this.exceptionHandler.CantReactYourself()
     }
 
-    if (reactionIsConclusive(body.type)) {
+    if (ReactionEntity.reactionIsConclusive(body.type)) {
       return this.exceptionHandler.CantUseConclusiveReactionInComment()
     }
 

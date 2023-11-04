@@ -3,7 +3,6 @@ import { UserEntity } from './User'
 import { CommentEntity } from './Comment'
 import { WriteEntity } from './Write'
 import { ConstantEntity } from './Constant'
-import { InteractionEntity } from './_Base'
 import { PromptEntity } from './Prompt'
 
 export enum ReactionType {
@@ -14,62 +13,22 @@ export enum ReactionType {
   'POSITIVE_CONCLUSIVE'='POSITIVE_CONCLUSIVE',
 }
 
-export abstract class ReactionEntity {
-  id!: number
-  userId!: UserEntity['id']
-  type!: ReactionType
-  createdAt!: DateTime
-  updatedAt!: DateTime
 
-  abstract getTargetId(): number
-  abstract getTarget(): Promise<InteractionEntity>
-  abstract getOwner(): Promise<UserEntity>
-  abstract removeScoreAlterationInTarget(reaction: ReactionEntity): Promise<void>
-  abstract addScoreAlterationInTarget(reaction: ReactionEntity): Promise<void>
 
-  static async removeScoreAlterationInTarget<T extends InteractionEntity>(reaction: ReactionEntity, target: T, constant: ConstantEntity): Promise<void> {
-    const author: UserEntity = await target.getAuthor()
-    author.score -= await getScoreImpactOfReaction(reaction.type, constant)
-  }
-
-  static async verifyInteractionBan<T extends InteractionEntity>(reaction: ReactionEntity, target: T, story: PromptEntity, { exclusionPercentage }: ConstantEntity): Promise<void> {
-    const allReactionsFromOwner = await target.getReactions()
-    const diff = getComplainVsPositive(allReactionsFromOwner)
-    const exclusionLimiar = 1 + story.popularity * exclusionPercentage
-    if (diff > exclusionLimiar) {
-      (await(await reaction.getTarget()).getAuthor()).interactionBanned()
-      await target.delete()
-      console.log(`The Interaction ${(await reaction.getOwner()).id} was banned!`)
-    }
-  }
-
-  static async addScoreAlterationInTarget<T extends InteractionEntity>(reaction: ReactionEntity, target: T, constant: ConstantEntity): Promise<void> {
-    const author: UserEntity = await target.getAuthor()
-    author.score += await getScoreImpactOfReaction(reaction.type, constant)
-  }
+export interface ReactionEntity { // "Abstract"
+  id: number
+  userId: UserEntity['id']
+  type: ReactionType
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
-export abstract class CommentReactionEntity extends ReactionEntity {
-  commentId!: CommentEntity['id']
-
-  abstract getComment(): Promise<CommentEntity>
-
-  async getTarget(): Promise<InteractionEntity> {
-    return this.getComment()
-  }
-  getTargetId(): number { return this.commentId }
+export interface CommentReactionEntity extends ReactionEntity {
+  commentId: CommentEntity['id']
 }
 
-export abstract class WriteReactionEntity extends ReactionEntity {
-  writeId!: WriteEntity['id']
-
-  abstract getWrite(): Promise<WriteEntity>
-
-  async getTarget(): Promise<InteractionEntity> {
-    return this.getWrite()
-  }
-
-  getTargetId(): number { return this.writeId }
+export interface WriteReactionEntity extends ReactionEntity {
+  writeId: WriteEntity['id']
 }
 
 export type CommentReactionInsert = Pick<CommentReactionEntity, 'commentId'|'type'>
@@ -77,52 +36,68 @@ export type CommentReactionInsert = Pick<CommentReactionEntity, 'commentId'|'typ
 export type WriteReactionInsert = Pick<WriteReactionEntity, 'writeId'|'type'>
 
 
-export function reactionIsConclusive(type: ReactionType): boolean {
-  return type === ReactionType.CONCLUSIVE || type === ReactionType.POSITIVE_CONCLUSIVE
-}
-
-export function reactionPositive(type: ReactionType): boolean {
-  return type === ReactionType.POSITIVE || type === ReactionType.POSITIVE_CONCLUSIVE
-}
-
-
-export function calculatePointsThrowReactions(reactionsArray: ReactionEntity[]): number {
-  let points = 0
-  for (const reaction of reactionsArray) {
-    points += getNumericValueOfReaction(reaction.type)
+export namespace ReactionEntity {
+  export async function removeScoreAlterationInTarget(reaction: ReactionEntity, author: UserEntity, constant: ConstantEntity): Promise<void> {
+    author.score -= await getScoreImpactOfReaction(reaction.type, constant)
   }
-  return points
-}
-
-export function getComplainVsPositive(allReactions: ReactionEntity[]): number {
-  return (
-    allReactions.filter(r => r.type === ReactionType.COMPLAINT).length
-  ) - (
-    allReactions.filter(r => reactionPositive(r.type)).length
-  )
-}
-
-export function getNumericValueOfReaction(type: ReactionType): number {
-  const typeToNumber: {[key in ReactionType]: number} = {
-    'POSITIVE': 1,
-    'NEGATIVE': -1,
-    'CONCLUSIVE': 1,
-    'COMPLAINT': -2,
-    'POSITIVE_CONCLUSIVE': 2,
+  
+  export async function verifyInteractionBan(reactions: ReactionEntity[], story: PromptEntity, { exclusionPercentage }: ConstantEntity): Promise<boolean> {
+    const diff = getComplainVsPositive(reactions)
+    const exclusionLimiar = 1 + story.popularity * exclusionPercentage
+    return diff > exclusionLimiar
+  }
+  
+  export async function addScoreAlterationInTarget(reaction: ReactionEntity, author: UserEntity, constant: ConstantEntity): Promise<void> {
+    author.score += await getScoreImpactOfReaction(reaction.type, constant)
   }
 
-  return typeToNumber[ReactionType[type]]
-}
-
-export async function getScoreImpactOfReaction(type: ReactionType, { strengthOfPositiveOpinion, strengthOfNegativeOpinion }: ConstantEntity): Promise<number> {
-  const strengthByType: {[key in ReactionType]: number} = {
-    'POSITIVE': strengthOfPositiveOpinion,
-    'NEGATIVE': 0,
-    'CONCLUSIVE': 0,
-    'COMPLAINT': -strengthOfNegativeOpinion,
-    'POSITIVE_CONCLUSIVE': strengthOfPositiveOpinion
+  export function reactionIsConclusive(type: ReactionType): boolean {
+    return type === ReactionType.CONCLUSIVE || type === ReactionType.POSITIVE_CONCLUSIVE
   }
-
-  return strengthByType[type]
+  
+  export function reactionPositive(type: ReactionType): boolean {
+    return type === ReactionType.POSITIVE || type === ReactionType.POSITIVE_CONCLUSIVE
+  }
+  
+  
+  export function calculatePointsThrowReactions(reactionsArray: ReactionEntity[]): number {
+    let points = 0
+    for (const reaction of reactionsArray) {
+      points += getNumericValueOfReaction(reaction.type)
+    }
+    return points
+  }
+  
+  export function getComplainVsPositive(allReactions: ReactionEntity[]): number {
+    return (
+      allReactions.filter(r => r.type === ReactionType.COMPLAINT).length
+    ) - (
+      allReactions.filter(r => reactionPositive(r.type)).length
+    )
+  }
+  
+  export function getNumericValueOfReaction(type: ReactionType): number {
+    const typeToNumber: {[key in ReactionType]: number} = {
+      'POSITIVE': 1,
+      'NEGATIVE': -1,
+      'CONCLUSIVE': 1,
+      'COMPLAINT': -2,
+      'POSITIVE_CONCLUSIVE': 2,
+    }
+  
+    return typeToNumber[ReactionType[type]]
+  }
+  
+  export async function getScoreImpactOfReaction(type: ReactionType, { strengthOfPositiveOpinion, strengthOfNegativeOpinion }: ConstantEntity): Promise<number> {
+    const strengthByType: {[key in ReactionType]: number} = {
+      'POSITIVE': strengthOfPositiveOpinion,
+      'NEGATIVE': 0,
+      'CONCLUSIVE': 0,
+      'COMPLAINT': -strengthOfNegativeOpinion,
+      'POSITIVE_CONCLUSIVE': strengthOfPositiveOpinion
+    }
+  
+    return strengthByType[type]
+  }
 }
 

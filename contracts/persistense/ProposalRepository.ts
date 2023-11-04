@@ -19,4 +19,5 @@ export interface ProposalRepository
       getIndexedProposalsByPrompt(promptId: PromptEntity['id'], index: number): Promise<ProposalEntity[]>
       findByWriteId(writeId: WriteEntity['id']): Promise<ProposalEntity | null>
       getAmountOfConclusiveReactions(proposal: ProposalEntity): Promise<number>
+      getWrite(proposal: ProposalEntity): Promise<WriteEntity>
     }

@@ -1,24 +1,20 @@
 import { DateTime } from 'luxon'
-import { PromptEntity } from './Prompt'
-import { ThematicWordEntity } from './ThematicWord'
 
 export type GenreInsert = {
   thematicWords: string[]
 } & Pick<GenreEntity, 'name'|'imageUrl'>
 
-export abstract class GenreEntity {
-  id!: number
-  name!: string
-  imageUrl!: string
-  popularity!: number // Amount of Prompts per day
-  createdAt!: DateTime
-  updatedAt!: DateTime
+export interface GenreEntity {
+  id: number
+  name: string
+  imageUrl: string
+  popularity: number // Amount of Prompts per day
+  createdAt: DateTime
+  updatedAt: DateTime
+}
 
-  abstract getPrompts(): Promise<PromptEntity[]>
-  abstract getThematicWords(): Promise<ThematicWordEntity[]>
-  abstract calculateGenrePopularity(genre: GenreEntity, amountOfNonDailyPrompts: number): Promise<void>
-
-  static async calculateGenrePopularity(genre: GenreEntity, amountOfNonDailyPrompts: number): Promise<void> {
+export namespace GenreEntity {
+  export async function calculateGenrePopularity(genre: GenreEntity, amountOfNonDailyPrompts: number): Promise<void> {
     const startDate = genre.createdAt
     const actualDate = DateTime.now()
     const daysOfExistence = startDate.diff(actualDate).days
@@ -26,4 +22,3 @@ export abstract class GenreEntity {
     genre.popularity = amountOfNonDailyPrompts / (daysOfExistence + 1)
   }
 }
-

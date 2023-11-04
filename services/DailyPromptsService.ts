@@ -21,7 +21,8 @@ export class DailyPromptsService implements DailyPromptsUsecase {
   public async deleteAllNonAppropriatedDailyPrompts(): Promise<void> {
     const allDailyPrompts = await this.promptRepository.getAllDailyPrompt()
     for (const prompt of allDailyPrompts) {
-      if ((await prompt.getWrite()).authorId === null) {
+      const write = await this.promptRepository.getWrite(prompt)
+      if (write.authorId === null) {
         await this.promptRepository.delete(prompt.id)
       }
     }
@@ -29,8 +30,8 @@ export class DailyPromptsService implements DailyPromptsUsecase {
 
   public async createDailyPromptsForEachGenre(): Promise<void> {
     const allGenres = await this.genreRepository.findAll()
-    if(!allGenres.data) { return }
-    for (const genre of allGenres.data.all) {
+    if(!allGenres) { return }
+    for (const genre of allGenres.all) {
       for (let i = 0; i < genre.popularity; i++) {
         const newWrite = await this.writeRepository.create({
           text: await this.getRandomText(genre),
@@ -53,7 +54,7 @@ export class DailyPromptsService implements DailyPromptsUsecase {
 
   private async getRandomText(genre: GenreEntity): Promise<string> {
     let text = ''
-    let thematicWords: ThematicWordEntity[] = await genre.getThematicWords()
+    let thematicWords: ThematicWordEntity[] = await this.genreRepository.getThematicWords(genre)
     const amount = thematicWords.length < 3 ? thematicWords.length : 3
     for (let i = 0; i < amount; i++) {
       const word = getRandomWord(thematicWords).text

@@ -1,6 +1,6 @@
 import { BaseHTTPService } from './BaseHTTPService'
 import { ExceptionHandler, ProposalRepository, WriteRepository, PromptRepository, ReactWriteRepository } from '../contracts'
-import { UserEntity, ReactionType, getExibitionReaction, WriteEntity, WriteReactionEntity, WriteReactionInsert, reactionIsConclusive } from '../entities'
+import { UserEntity, ReactionType, getExibitionReaction, WriteEntity, WriteReactionEntity, WriteReactionInsert, ReactionEntity } from '../entities'
 import { ReactWritesUsecase } from '../usecases'
 
 export class ReactWritesService extends BaseHTTPService implements ReactWritesUsecase {
@@ -43,7 +43,7 @@ export class ReactWritesService extends BaseHTTPService implements ReactWritesUs
       return this.exceptionHandler.CantComplaintToDailyWrite()
     }
 
-    if (reactionIsConclusive(body.type)) {
+    if (ReactionEntity.reactionIsConclusive(body.type)) {
       if (await this.promptRepository.findByWriteId(body.writeId)) {
         return this.exceptionHandler.CantUseConclusiveReactionInPrompt()
       } else {

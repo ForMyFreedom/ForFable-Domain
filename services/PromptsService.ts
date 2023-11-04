@@ -15,7 +15,7 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
   public async index(): Promise<Pagination<PromptEntity>> {
     const response = await this.promptsRepository.findAll()
     this.exceptionHandler.SucessfullyRecovered(response)
-    return response
+    return { data: response }
   }
 
   public async show(promptId: PromptEntity['id']): Promise<ApiResponse<PromptEntity>> {
@@ -31,7 +31,7 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
 
   public async store(authorId: UserEntity['id'], body: PromptInsert): Promise<ApiResponse<PromptEntity>> {
     const { text, genreIds, ...rest } = body
-    if(authorId) {
+    if(!authorId) {
       this.exceptionHandler.UndefinedId()
       return { error: 'UndefinedId' }
     }
@@ -56,7 +56,7 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
       this.exceptionHandler.UndefinedId()
       return { error: 'UndefinedId' }
     }
-    const write = await prompt.getWrite()
+    const write = await this.promptsRepository.getWrite(prompt)
 
 
     if (write.authorId !== userId) {
@@ -99,7 +99,7 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
       return { error: 'UndefinedId' }
     }
 
-    if((await prompt.getWrite()).authorId == userId) {
+    if((await this.promptsRepository.getWrite(prompt)).authorId == userId) {
       const response = await this.promptsRepository.delete(promptId)
       this.exceptionHandler.SucessfullyDestroyed(response)
       return response ? { data: response } : { error: 'UndefinedId' }
@@ -122,7 +122,7 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
       return { error: 'UndefinedId' }
     }
 
-    const write = await prompt.getWrite()
+    const write = await this.promptsRepository.getWrite(prompt)
 
     if (!prompt.isDaily || write.authorId !== null) {
       this.exceptionHandler.NotAppropriablePrompt()

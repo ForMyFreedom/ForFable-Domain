@@ -15,7 +15,7 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
   public async index(page: number, limit: number): Promise<Pagination<UserEntity>> {
     const response = await this.userRepository.findAll(page, limit)
     this.exceptionHandler.SucessfullyRecovered(response)
-    return response
+    return { data: response }
   }
 
   public async show(userId: UserEntity['id']): Promise<ApiResponse<UserEntity>> {
@@ -86,7 +86,7 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
     }
 
     if (user.id === responserId) {
-      await user.softDelete()
+      await this.userRepository.softDelete(user.id)
       this.exceptionHandler.SucessfullyDestroyed(user)
       return {data: user}
     } else {
@@ -108,7 +108,7 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
       return { data: false, error: 'Unauthenticated' }
     }
 
-    const user = await findToken.getUser()
+    const user = await this.tokenRepository.getUser(findToken.id)
     user.emailVerified = true
     await this.userRepository.update(user.id, user)
     await this.tokenRepository.delete(findToken.id)
@@ -143,7 +143,7 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
       return { error: langContract.TokenIsInvalid }
     }
 
-    const user = await findToken.getUser()
+    const user = await this.tokenRepository.getUser(findToken.id)
     user.password = body.password
     await this.userRepository.update(user.id, user)
     await this.tokenRepository.delete(findToken.id)

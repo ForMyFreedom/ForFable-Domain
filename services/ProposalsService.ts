@@ -50,7 +50,7 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
       return this.exceptionHandler.UndefinedWrite()
     }
 
-    const promptWrite = await prompt.getWrite()
+    const promptWrite = await this.promptRepository.getWrite(prompt)
 
     if (prompt.concluded) {
       return this.exceptionHandler.CantProposeToClosedHistory()
@@ -88,7 +88,7 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
     if (!proposal) {
       return this.exceptionHandler.UndefinedId()
     }
-    const writeProposal = await proposal.getWrite()
+    const writeProposal = await this.proposalsRepository.getWrite(proposal)
 
     if (writeProposal.authorId !== userId) {
       return this.exceptionHandler.CantEditOthersWrite()
@@ -108,7 +108,7 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
       return this.exceptionHandler.UndefinedId()
     }
 
-    const proposalWrite = await proposal.getWrite()
+    const proposalWrite = await this.proposalsRepository.getWrite(proposal)
 
     if (proposalWrite.authorId === userId) {
       await this.proposalsRepository.delete(proposalId)

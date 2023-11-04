@@ -11,6 +11,7 @@ export interface UserRepository extends DefaultRepository<UserInsert, UserEntity
     isNeedToVerifyEmail(): Promise<boolean>
     findByIdentify(identify: string): Promise<UserEntity|null>
     passwordIsValid(body: PasswordInsert): Promise<{errors?: string[]}>
+    softDelete(userId: UserEntity['id']): Promise<UserEntity|null>
 }
 
 export interface AuthWrapper {

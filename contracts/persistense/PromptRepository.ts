@@ -1,4 +1,4 @@
-import { PromptInsert, PromptEntity, GenreEntity, WriteEntity } from "../../entities";
+import { PromptInsert, PromptEntity, GenreEntity, WriteEntity, ProposalEntity } from "../../entities";
 import { DefaultRepository } from "./_DefaultRepository";
 
 type ExtraInfoOnCreate = {
@@ -13,5 +13,7 @@ export interface PromptRepository extends DefaultRepository<PromptInsert & Extra
     promptIsConcluded(promptId: PromptEntity['id']): Promise<boolean>
     findByWriteId(writeId: WriteEntity['id']): Promise<PromptEntity | null>
     getAllDailyPrompt(): Promise<PromptEntity[]>
+    getProposals(prompt: PromptEntity|PromptEntity['id']): Promise<ProposalEntity[]>
+    getWrite(prompt: PromptEntity): Promise<WriteEntity>
 }
 

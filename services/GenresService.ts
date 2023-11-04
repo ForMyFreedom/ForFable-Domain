@@ -22,7 +22,7 @@ export class GenresService extends BaseHTTPService implements GenresUsecase {
   public async index(page?: number, limit?: number): Promise<Pagination<GenreEntity>> {
     const response = await this.genreRepository.loadGenresWithWords(page, limit)
     this.exceptionHandler.SucessfullyRecovered(response)
-    return response
+    return { data: response }
   }
 
   public async show(genreId: GenreEntity['id']): Promise<ApiResponse<GenreEntity>> {
