@@ -1,4 +1,4 @@
-import { Pagination } from "../../services"
+import { Pagination } from "../../usecases/BaseUsecase"
 
 export interface DefaultRepository<TInsert, TEntity extends { id: number }> {
     find(entityId: TEntity['id']): Promise<TEntity|null>

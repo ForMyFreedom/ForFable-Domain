@@ -1,6 +1,7 @@
+import { EmailSended } from "../../usecases";
 import { TokenEntity, UserEntity } from "../../entities";
 
 export interface MailSender {
-    sendUserRequestPasswordMail(user: UserEntity, token: TokenEntity): Promise<void>
-    sendUserVerificationMail(user: UserEntity, token: TokenEntity): Promise<void>
+    sendUserRequestPasswordMail(user: UserEntity, token: TokenEntity): Promise<EmailSended>
+    sendUserVerificationMail(user: UserEntity, token: TokenEntity): Promise<EmailSended>
 }

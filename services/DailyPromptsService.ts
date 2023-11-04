@@ -1,7 +1,8 @@
 import { GenreEntity, ThematicWordEntity } from '../entities'
 import { GenresRepository, PromptRepository, WriteRepository } from '../contracts'
-import { DailyPromptsUsecase } from '../usecases'
+import { DailyPromptsUsecase, InternalProcessResponse } from '../usecases'
 import { DateTime } from 'luxon'
+import { ApiResponse } from '..'
 
 export class DailyPromptsService implements DailyPromptsUsecase {
   public static SEPARATOR = ' | '
@@ -12,13 +13,13 @@ export class DailyPromptsService implements DailyPromptsUsecase {
     private readonly genreRepository: GenresRepository,
   ) { }
 
-  public async refreshDailyPrompt(): Promise<void> {
+  public async refreshDailyPrompt(): Promise<ApiResponse<InternalProcessResponse>> {
     console.log(`${DateTime.now()}  |  Reseting Daily Prompts!`)
     await this.deleteAllNonAppropriatedDailyPrompts()
-    await this.createDailyPromptsForEachGenre()
+    return await this.createDailyPromptsForEachGenre()
   }
 
-  public async deleteAllNonAppropriatedDailyPrompts(): Promise<void> {
+  public async deleteAllNonAppropriatedDailyPrompts(): Promise<ApiResponse<InternalProcessResponse>> {
     const allDailyPrompts = await this.promptRepository.getAllDailyPrompt()
     for (const prompt of allDailyPrompts) {
       const write = await this.promptRepository.getWrite(prompt)
@@ -26,11 +27,12 @@ export class DailyPromptsService implements DailyPromptsUsecase {
         await this.promptRepository.delete(prompt.id)
       }
     }
+    return { data: { success: true } }
   }
 
-  public async createDailyPromptsForEachGenre(): Promise<void> {
+  public async createDailyPromptsForEachGenre(): Promise<ApiResponse<InternalProcessResponse>> {
     const allGenres = await this.genreRepository.findAll()
-    if(!allGenres) { return }
+    if(!allGenres) { return { data: { success: false } } }
     for (const genre of allGenres.all) {
       for (let i = 0; i < genre.popularity; i++) {
         const newWrite = await this.writeRepository.create({
@@ -50,6 +52,8 @@ export class DailyPromptsService implements DailyPromptsUsecase {
         await this.promptRepository.setGenresInPrompt(newPrompt, [genre.id])
       }
     }
+
+    return { data: { success: true } }
   }
 
   private async getRandomText(genre: GenreEntity): Promise<string> {

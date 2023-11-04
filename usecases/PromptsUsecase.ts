@@ -2,7 +2,8 @@ import { ApiResponse, Pagination } from '..'
 import { GainControlOverDailyPromptInsert, PromptEntity, PromptInsert, UserEntity } from '../entities'
 
 export interface PromptsUsecase {
-  index(): Promise<Pagination<PromptEntity>>
+  index(page?: number, limit?: number): Promise<Pagination<PromptEntity>>
+  indexByAuthor(authorId: UserEntity['id'], page?: number, limit?: number): Promise<Pagination<PromptEntity>>
   show(promptId: PromptEntity['id']): Promise<ApiResponse<PromptEntity>>
   store(authorId: undefined|UserEntity['id'], body: PromptInsert): Promise<ApiResponse<PromptEntity>>
   update(authorId: undefined|UserEntity['id'], promptId: PromptEntity['id'], partialPrompt: Partial<PromptInsert>): Promise<ApiResponse<PromptEntity>>

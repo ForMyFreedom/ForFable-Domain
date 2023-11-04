@@ -1,7 +1,7 @@
 import { BaseHTTPService } from './BaseHTTPService'
-import { ExceptionHandler, ProposalRepository, WriteRepository, PromptRepository, ReactWriteRepository } from '../contracts'
+import { ResponseHandler, ProposalRepository, WriteRepository, PromptRepository, ReactWriteRepository } from '../contracts'
 import { UserEntity, ReactionType, getExibitionReaction, WriteEntity, WriteReactionEntity, WriteReactionInsert, ReactionEntity } from '../entities'
-import { ReactWritesUsecase } from '../usecases'
+import { ApiResponse, ReactWritesUsecase } from '../usecases'
 
 export class ReactWritesService extends BaseHTTPService implements ReactWritesUsecase {
   constructor(
@@ -9,48 +9,48 @@ export class ReactWritesService extends BaseHTTPService implements ReactWritesUs
     private readonly writeRepository: WriteRepository,
     private readonly proposalRepository: ProposalRepository,
     private readonly promptRepository: PromptRepository,
-    public exceptionHandler: ExceptionHandler
-  ) { super(exceptionHandler) }
+    public responseHandler: ResponseHandler
+  ) { super(responseHandler) }
 
-  public async show(writeId: WriteEntity['id']): Promise<void> {
+  public async show(writeId: WriteEntity['id']): Promise<ApiResponse<WriteReactionEntity>> {
     const write = await this.writeRepository.find(writeId)
     if (!write) {
-      return this.exceptionHandler.UndefinedId()
+      return this.responseHandler.UndefinedId<object>()
     }
     const bruteReactions =
       await this.reactWriteRepository.getBruteReactions(writeId)
     
     const reactions = getExibitionReaction(bruteReactions)
-    this.exceptionHandler.SucessfullyRecovered(reactions)
+    return this.responseHandler.SucessfullyRecovered<object>(reactions)
   }
 
-  public async store(userId: UserEntity['id']|undefined, body: WriteReactionInsert): Promise<void> {
+  public async store(userId: UserEntity['id']|undefined, body: WriteReactionInsert): Promise<ApiResponse<WriteReactionEntity>> {
     if (!userId) {
-      return this.exceptionHandler.Unauthenticated()
+      return this.responseHandler.Unauthenticated<object>()
     }
 
     const write = await this.writeRepository.find(body.writeId)
 
     if (!write) {
-      return this.exceptionHandler.UndefinedWrite()
+      return this.responseHandler.UndefinedWrite<object>()
     }
 
     if (write.authorId == userId) {
-      return this.exceptionHandler.CantReactYourself()
+      return this.responseHandler.CantReactYourself<object>()
     }
 
     if (body.type === ReactionType.COMPLAINT && await this.writeIsDaily(body.writeId)) {
-      return this.exceptionHandler.CantComplaintToDailyWrite()
+      return this.responseHandler.CantComplaintToDailyWrite<object>()
     }
 
     if (ReactionEntity.reactionIsConclusive(body.type)) {
       if (await this.promptRepository.findByWriteId(body.writeId)) {
-        return this.exceptionHandler.CantUseConclusiveReactionInPrompt()
+        return this.responseHandler.CantUseConclusiveReactionInPrompt<object>()
       } else {
         const writeIsProposal = await this.proposalRepository.findByWriteId(write.id)
         if (writeIsProposal) {
           if (await this.promptRepository.promptIsConcluded(writeIsProposal.promptId)) {
-            return this.exceptionHandler.CantUseConclusiveReactionInConcludedHistory()
+            return this.responseHandler.CantUseConclusiveReactionInConcludedHistory<object>()
           }
         }
       }
@@ -66,24 +66,24 @@ export class ReactWritesService extends BaseHTTPService implements ReactWritesUs
       ...body, userId: userId
     })
 
-    this.exceptionHandler.SucessfullyCreated(reaction)
+    return this.responseHandler.SucessfullyCreated(reaction)
   }
 
-  public async destroy(userId: UserEntity['id']|undefined, reactionId: WriteReactionEntity['id']): Promise<void> {
+  public async destroy(userId: UserEntity['id']|undefined, reactionId: WriteReactionEntity['id']): Promise<ApiResponse<WriteReactionEntity>> {
     if (!userId) {
-      return this.exceptionHandler.Unauthenticated()
+      return this.responseHandler.Unauthenticated<object>()
     }
 
     const reaction = await this.reactWriteRepository.find(reactionId)
     if (!reaction) {
-      return this.exceptionHandler.UndefinedId()
+      return this.responseHandler.UndefinedId<object>()
     }
   
     if (userId === reaction.userId) {
       await this.reactWriteRepository.delete(reactionId)
-      this.exceptionHandler.SucessfullyDestroyed(reaction)
+      return this.responseHandler.SucessfullyDestroyed(reaction)
     } else {
-      this.exceptionHandler.CantDeleteOthersReaction()
+      return this.responseHandler.CantDeleteOthersReaction<object>()
     }
   }
 

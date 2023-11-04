@@ -1,4 +1,4 @@
-import { ApiResponse, GenericResponse, Pagination } from '../services'
+import { ApiResponse, EmailSended, GenericResponse, Pagination } from '.'
 import { ExceptionContract } from '../contracts'
 import { RestartPasswordInsert, UserEntity, UserInsert } from '../entities'
 
@@ -9,7 +9,7 @@ export interface UsersUsecase {
   update(responserId: UserEntity['id']|undefined, userId: UserEntity['id'], partialBody: Partial<UserInsert>): Promise<ApiResponse<UserEntity>>
   destroy(responserId: UserEntity['id']|undefined, userId: UserEntity['id']): Promise<ApiResponse<UserEntity>>
   verifyEmail(token: string|undefined): Promise<ApiResponse<boolean>>
-  requestPasswordChange(user: UserEntity|undefined): Promise<ApiResponse<boolean>>
+  requestPasswordChange(user: UserEntity|undefined): Promise<ApiResponse<EmailSended>>
   restartPassword(langContract: ExceptionContract, token: string|undefined, body: RestartPasswordInsert): Promise<GenericResponse>
 }
 

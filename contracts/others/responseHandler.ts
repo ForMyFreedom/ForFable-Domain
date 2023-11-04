@@ -1,3 +1,4 @@
+import { ApiResponse } from "../../usecases/BaseUsecase"
 
 export interface ExceptionContract {
   RouteNotFounded: string
@@ -45,6 +46,6 @@ export interface ExceptionContract {
   CantComplaintToDailyWrite: string
 }
 
-export type ExceptionHandler = {
-  [Prop in keyof ExceptionContract]: (body?: object|null) => void
+export type ResponseHandler = {
+  [Prop in keyof ExceptionContract]: <T>(body?: T|null) => T extends ApiResponse<object> ? T : ApiResponse<T>
 }

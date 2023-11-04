@@ -1,56 +1,62 @@
 import { BaseHTTPService } from './BaseHTTPService'
-import { WriteRepository, ExceptionHandler, CommentRepository } from '../contracts'
+import { ApiResponse } from "../usecases/BaseUsecase"
+import { WriteRepository, ResponseHandler, CommentRepository } from '../contracts'
 import { WriteEntity, UserEntity, CommentEntity, CommentInsert } from '../entities'
-import { CommentsUsecase } from '../usecases'
+import { CommentsUsecase, EstruturatedCommentsWithAnswers } from '../usecases'
 
 export class CommentsService extends BaseHTTPService implements CommentsUsecase {
   constructor(
     private readonly commentRepository: CommentRepository,
     private readonly writeRepository: WriteRepository,
-    public exceptionHandler: ExceptionHandler
-  ) { super(exceptionHandler) }
+    public responseHandler: ResponseHandler
+  ) { super(responseHandler) }
 
-  public async indexByWrite(writeId: WriteEntity['id']): Promise<void> {
+  public async indexByWrite(writeId: WriteEntity['id'], page?: number, limit?: number): Promise<ApiResponse<EstruturatedCommentsWithAnswers>> {
     if (! await this.writeRepository.find(writeId)) {
-      return this.exceptionHandler.UndefinedId()
+      return this.responseHandler.UndefinedId<object>()
     }
-    const comments: CommentEntity[] = await this.commentRepository.getByWrite(writeId)
-    const authors: UserEntity[] = await this.commentRepository.loadAuthors(comments)
-    const finalComments: Partial<CommentEntity>[] = await estruturateCommentsWithAnswers(comments)
-    this.exceptionHandler.SucessfullyRecovered({ comments: finalComments, authors: authors })
+    const comments = await this.commentRepository.getByWrite(writeId, page, limit)
+    const commentsArray = comments.data?.all
+    if(!commentsArray){
+      return this.responseHandler.InternalServerError<object>()
+    }
+    const authors: UserEntity[] = await this.commentRepository.loadAuthors(commentsArray)
+    const finalComments: Partial<CommentEntity>[] = await estruturateCommentsWithAnswers(commentsArray)
+    const response = { comments: finalComments, authors: authors }
+    return this.responseHandler.SucessfullyRecovered(response)
   }
 
 
-  public async store(user: UserEntity|undefined, body: CommentInsert): Promise<void> {
+  public async store(user: UserEntity|undefined, body: CommentInsert): Promise<ApiResponse<CommentEntity>> {
     if (!user) {
-      return this.exceptionHandler.Unauthenticated()
+      return this.responseHandler.Unauthenticated<object>()
     }
 
     if(! await this.writeRepository.find(body.writeId)) {
-      return this.exceptionHandler.UndefinedWrite()
+      return this.responseHandler.UndefinedWrite<object>()
     }
 
     if (body.answerToId) {
       const toAnswer = await this.commentRepository.find(body.answerToId)
       if(!toAnswer){
-        return this.exceptionHandler.UndefinedComment()
+        return this.responseHandler.UndefinedComment<object>()
       }
 
       if(toAnswer.writeId !== body.writeId) {
-        return this.exceptionHandler.IncompatibleWriteAndAnswer()
+        return this.responseHandler.IncompatibleWriteAndAnswer<object>()
       }
     }
 
     const comment = await this.commentRepository.create({
       ...body, authorId: user.id
     })
-    return this.exceptionHandler.SucessfullyCreated(comment)
+    return this.responseHandler.SucessfullyCreated(comment)
   }
 
 
-  public async update(userId: UserEntity['id']|undefined, commentId: CommentEntity['id'], body: Partial<CommentInsert>): Promise<void> {
+  public async update(userId: UserEntity['id']|undefined, commentId: CommentEntity['id'], body: Partial<CommentInsert>): Promise<ApiResponse<CommentEntity>> {
     if (!userId) {
-      return this.exceptionHandler.Unauthenticated()
+      return this.responseHandler.Unauthenticated<object>()
     }
 
     const comment = await this.commentRepository.find(commentId)
@@ -58,35 +64,35 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
     const { writeId, answerToId, ...safeBody } = body
 
     if (!comment) {
-      return this.exceptionHandler.UndefinedId()
+      return this.responseHandler.UndefinedId<object>()
     }
 
     if (comment.authorId !== userId) {
-      return this.exceptionHandler.CantEditOthersWrite()
+      return this.responseHandler.CantEditOthersWrite<object>()
     }
 
     const updatedComment = await this.commentRepository.update(commentId, {... safeBody, edited: true})
-    this.exceptionHandler.SucessfullyUpdated(updatedComment )
+    return this.responseHandler.SucessfullyUpdated(updatedComment)
   }
 
 
-  public async destroy(userId: UserEntity['id']|undefined, commentId: CommentEntity['id']): Promise<void> {
+  public async destroy(userId: UserEntity['id']|undefined, commentId: CommentEntity['id']): Promise<ApiResponse<CommentEntity>> {
     if (!userId) {
-      return this.exceptionHandler.Unauthenticated()
+      return this.responseHandler.Unauthenticated<object>()
     }
 
     const comment = await this.commentRepository.find(commentId)
 
     if (!comment) {
-      return this.exceptionHandler.UndefinedId()
+      return this.responseHandler.UndefinedId<object>()
     }
 
     if (comment.authorId !== userId) {
-      return this.exceptionHandler.CantDeleteOthersWrite()
+      return this.responseHandler.CantDeleteOthersWrite<object>()
     }
 
     const deletedComment = await this.commentRepository.delete(commentId)
-    this.exceptionHandler.SucessfullyDestroyed(deletedComment )
+    return this.responseHandler.SucessfullyDestroyed(deletedComment)
   }
 }
 

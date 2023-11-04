@@ -1,3 +1,4 @@
+export * from './BaseUsecase'
 export * from './CommentsUsecase'
 export * from './ConstantsUsecase'
 export * from './DailyPromptsUsecase'

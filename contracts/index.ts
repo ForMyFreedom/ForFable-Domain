@@ -1,4 +1,4 @@
-export * from './others/exceptionHandler'
+export * from './others/responseHandler'
 export * from './others/eventEmitter'
 export * from './others/mailSender'
 export * from './persistense/CommentRepository'

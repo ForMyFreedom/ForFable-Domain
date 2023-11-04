@@ -1,25 +1,26 @@
 import { BaseHTTPService } from "./BaseHTTPService"
-import { ExceptionHandler, ConstantsRepository } from "../contracts"
+import { ApiResponse } from "../usecases/BaseUsecase"
+import { ResponseHandler, ConstantsRepository } from "../contracts"
 import { ConstantEntity } from "../entities"
 import { ConstantsUsecase } from "../usecases"
 
 export class ConstantsService extends BaseHTTPService implements ConstantsUsecase {
   constructor(
     private readonly constantsRepository: ConstantsRepository,
-    public exceptionHandler: ExceptionHandler
-  ) { super(exceptionHandler) }
+    public responseHandler: ResponseHandler
+  ) { super(responseHandler) }
 
-  public async show(): Promise<void> {
+  public async show(): Promise<ApiResponse<ConstantEntity>> {
     const theConfig = await this.constantsRepository.getConfig()
-    this.exceptionHandler.SucessfullyRecovered(theConfig)
+    return this.responseHandler.SucessfullyRecovered(theConfig)
   }
 
-  public async update(contant: Partial<ConstantEntity>): Promise<void> {
+  public async update(contant: Partial<ConstantEntity>): Promise<ApiResponse<ConstantEntity>> {
     const theConfig = await this.constantsRepository.getConfig()
     if(!theConfig){
-      return this.exceptionHandler.ServerMisconfigured()
+      return this.responseHandler.ServerMisconfigured<object>()
     }
     const updatedConfig = await this.constantsRepository.update(contant)
-    this.exceptionHandler.SucessfullyUpdated(updatedConfig )
+    return this.responseHandler.SucessfullyUpdated(updatedConfig)
   }
 }

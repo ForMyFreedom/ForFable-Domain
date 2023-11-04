@@ -1,67 +1,67 @@
 import { BaseHTTPService } from "./BaseHTTPService"
 import { ProposalEntity, PromptEntity, UserEntity, ProposalInsert } from "../entities"
-import { ExceptionHandler, WriteRepository, PromptRepository, ProposalRepository } from "../contracts"
-import { ProposalsUsecase } from '../usecases'
+import { ResponseHandler, WriteRepository, PromptRepository, ProposalRepository } from "../contracts"
+import { ApiResponse, Pagination, ProposalsUsecase } from '../usecases'
 
 export class ProposalsService extends BaseHTTPService implements ProposalsUsecase {
   constructor(
     private readonly proposalsRepository: ProposalRepository,
     private readonly promptRepository: PromptRepository,
     private readonly writeRepository: WriteRepository,
-    public exceptionHandler: ExceptionHandler
-  ) { super(exceptionHandler) }
+    public responseHandler: ResponseHandler
+  ) { super(responseHandler) }
 
-  public async indexByPrompt(promptId: PromptEntity['id']): Promise<void> {
+  public async indexByPrompt(promptId: PromptEntity['id']): Promise<Pagination<ProposalEntity>> {
     const prompt = await this.promptRepository.find(promptId)
     if (!prompt) {
-      return this.exceptionHandler.UndefinedId()
+      return this.responseHandler.UndefinedId<object>()
     }
     const proposals = await this.proposalsRepository.getProposalsByPrompt(promptId)
-    this.exceptionHandler.SucessfullyRecovered(proposals)
+    return this.responseHandler.SucessfullyRecovered<Pagination<ProposalEntity>>(proposals)
   }
 
-  public async actualIndexByPrompt(promptId: PromptEntity['id']): Promise<void> {
+  public async actualIndexByPrompt(promptId: PromptEntity['id']): Promise<Pagination<ProposalEntity>> {
     const prompt = await this.promptRepository.find(promptId)
     if (!prompt) {
-      return this.exceptionHandler.UndefinedId()
+      return this.responseHandler.UndefinedId<object>()
     }
     const proposals = await this.proposalsRepository.getIndexedProposalsByPrompt(promptId, prompt.currentIndex)
-    this.exceptionHandler.SucessfullyRecovered(proposals)
+    return this.responseHandler.SucessfullyRecovered(proposals)
   }
 
-  public async show(proposalId: ProposalEntity['id']): Promise<void> {
+  public async show(proposalId: ProposalEntity['id']): Promise<ApiResponse<ProposalEntity>> {
     const proposal = await this.proposalsRepository.fullFind(proposalId)
     if (proposal) {
-      this.exceptionHandler.SucessfullyRecovered(proposal)
+      return this.responseHandler.SucessfullyRecovered(proposal)
     } else {
-      this.exceptionHandler.UndefinedId()
+      return this.responseHandler.UndefinedId<object>()
     }
   }
 
-  public async store(userId: UserEntity['id']|undefined, body: ProposalInsert ): Promise<void> {
+  public async store(userId: UserEntity['id']|undefined, body: ProposalInsert ): Promise<ApiResponse<ProposalEntity>> {
     if (!userId) {
-      return this.exceptionHandler.InvalidUser()
+      return this.responseHandler.InvalidUser<object>()
     }
 
     const { text, promptId } = body
     const prompt = await this.promptRepository.find(promptId)
 
     if (!prompt) {
-      return this.exceptionHandler.UndefinedWrite()
+      return this.responseHandler.UndefinedWrite<object>()
     }
 
     const promptWrite = await this.promptRepository.getWrite(prompt)
 
     if (prompt.concluded) {
-      return this.exceptionHandler.CantProposeToClosedHistory()
+      return this.responseHandler.CantProposeToClosedHistory<object>()
     }
 
     if (prompt.isDaily && promptWrite.authorId === null) {
-      return this.exceptionHandler.CantProposeToUnappropriatedPrompt()
+      return this.responseHandler.CantProposeToUnappropriatedPrompt<object>()
     }
 
     if (prompt.maxSizePerExtension < text.length) {
-      return this.exceptionHandler.TextLengthHigherThanAllowed()
+      return this.responseHandler.TextLengthHigherThanAllowed<object>()
     }
 
     const finalText = insertSpaceInStartOfText(text)
@@ -76,46 +76,51 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
       orderInHistory: prompt.currentIndex,
     })
 
-    this.exceptionHandler.SucessfullyCreated(proposal)
+    return this.responseHandler.SucessfullyCreated(proposal)
   }
 
-  public async update(userId: UserEntity['id']|undefined, proposalId: ProposalEntity['id'], partialBody: Partial<ProposalInsert>): Promise<void> {
+  public async update(userId: UserEntity['id']|undefined, proposalId: ProposalEntity['id'], partialBody: Partial<ProposalInsert>): Promise<ApiResponse<ProposalEntity>> {
     if (!userId) {
-      return this.exceptionHandler.Unauthenticated()
+      return this.responseHandler.Unauthenticated<object>()
     }
   
     const proposal = await this.proposalsRepository.find(proposalId)
     if (!proposal) {
-      return this.exceptionHandler.UndefinedId()
+      return this.responseHandler.UndefinedId<object>()
     }
     const writeProposal = await this.proposalsRepository.getWrite(proposal)
 
     if (writeProposal.authorId !== userId) {
-      return this.exceptionHandler.CantEditOthersWrite()
+      return this.responseHandler.CantEditOthersWrite<object>()
     }
 
     const newProposal = await this.proposalsRepository.update(
       proposal.id, partialBody
     )
     
-    this.exceptionHandler.SucessfullyUpdated(newProposal )
+    return this.responseHandler.SucessfullyUpdated(newProposal)
   }
 
-  public async destroy(userId: UserEntity['id']|undefined, proposalId: ProposalEntity['id']): Promise<void> {
+  public async destroy(userId: UserEntity['id']|undefined, proposalId: ProposalEntity['id']): Promise<ApiResponse<ProposalEntity>> {
     const proposal = await this.proposalsRepository.find(proposalId)
 
     if (!proposal) {
-      return this.exceptionHandler.UndefinedId()
+      return this.responseHandler.UndefinedId<object>()
     }
 
     const proposalWrite = await this.proposalsRepository.getWrite(proposal)
 
     if (proposalWrite.authorId === userId) {
       await this.proposalsRepository.delete(proposalId)
-      this.exceptionHandler.SucessfullyDestroyed(proposal)
+      return this.responseHandler.SucessfullyDestroyed(proposal)
     } else {
-      this.exceptionHandler.CantDeleteOthersWrite()
+      return this.responseHandler.CantDeleteOthersWrite<object>()
     }
+  }
+
+  public async indexByAuthor(authorId: number, page?: number | undefined, limit?: number | undefined): Promise<Pagination<ProposalEntity>> {
+    const response = await this.proposalsRepository.getProposalsByAuthor(authorId, page, limit)
+    return this.responseHandler.SucessfullyRecovered(response)
   }
 }
 

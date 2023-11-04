@@ -1,7 +1,8 @@
-import { ApiResponse, BaseHTTPService, GenericResponse, Pagination } from './BaseHTTPService'
-import { ExceptionContract, ExceptionHandler, TokenRepository, UserRepository } from '../contracts'
+import { BaseHTTPService } from './BaseHTTPService'
+import { Pagination, ApiResponse, GenericResponse } from '../usecases/BaseUsecase'
+import { ExceptionContract, ResponseHandler, TokenRepository, UserRepository } from '../contracts'
 import { RestartPasswordInsert, UserEntity, UserInsert, UserUpdate } from '../entities'
-import { MailUsecase, UsersUsecase } from '../usecases'
+import { EmailSended, MailUsecase, UsersUsecase } from '../usecases'
 import { prettifyErrorList } from '../utils'
 
 export class UsersService extends BaseHTTPService implements UsersUsecase {
@@ -9,23 +10,20 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
     private readonly userRepository: UserRepository,
     private readonly tokenRepository: TokenRepository,
     private readonly mailService: MailUsecase,
-    public exceptionHandler: ExceptionHandler
-  ) { super(exceptionHandler) }
+    public responseHandler: ResponseHandler
+  ) { super(responseHandler) }
 
   public async index(page: number, limit: number): Promise<Pagination<UserEntity>> {
     const response = await this.userRepository.findAll(page, limit)
-    this.exceptionHandler.SucessfullyRecovered(response)
-    return { data: response }
+    return this.responseHandler.SucessfullyRecovered(response)
   }
 
   public async show(userId: UserEntity['id']): Promise<ApiResponse<UserEntity>> {
     const user = await this.userRepository.find(userId)
     if (user) {
-      this.exceptionHandler.SucessfullyRecovered(user)
-      return { data: user }
+      return this.responseHandler.SucessfullyRecovered(user)
     } else {
-      this.exceptionHandler.UndefinedId()
-      return { error: 'UndefinedId' }
+      return this.responseHandler.UndefinedId<object>()
     }
   }
 
@@ -43,20 +41,17 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
 
     await this.userRepository.update(user.id, {emailVerified: !needToVerifyEmail})
 
-    this.exceptionHandler.SucessfullyCreated(user)
-    return { data: user }
+    return this.responseHandler.SucessfullyCreated(user)
   }
 
   public async update(responserId: UserEntity['id']|undefined, userId: UserEntity['id'], partialBody: Partial<UserUpdate>): Promise<ApiResponse<UserEntity>> {
     if (!responserId) {
-      this.exceptionHandler.Unauthenticated()
-      return { error: 'Unauthenticated' }
+      return this.responseHandler.Unauthenticated<object>()
     }
     const user = await this.userRepository.find(userId)
 
     if (!user) {
-      this.exceptionHandler.UndefinedId()
-      return { error: 'UndefinedId' }
+      return this.responseHandler.UndefinedId<object>()
     }
 
     if (responserId === user.id) {
@@ -64,48 +59,40 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
         ? { name: partialBody.name || user.name, imageUrl: partialBody.imageUrl || user.imageUrl }
         : partialBody
       const response = await this.userRepository.update(user.id, finalBody)
-      this.exceptionHandler.SucessfullyUpdated(response)
-      return response ? { data: response } : {error: 'InternalServerError'}
+      return this.responseHandler.SucessfullyUpdated(response)
     } else {
-      this.exceptionHandler.CantEditOtherUser()
-      return { error: 'CantEditOtherUser' }
+      return this.responseHandler.CantEditOtherUser<object>()
     }
   }
 
   public async destroy(responserId: UserEntity['id']|undefined, userId: UserEntity['id']): Promise<ApiResponse<UserEntity>> {
     if (!responserId) {
-      this.exceptionHandler.Unauthenticated()
-      return { error: 'Unauthenticated' }
+      return this.responseHandler.Unauthenticated<object>()
     }
 
     const user = await this.userRepository.find(userId)
 
     if (!user) {
-      this.exceptionHandler.UndefinedId()
-      return { error: 'UndefinedId' }
+      return this.responseHandler.UndefinedId<object>()
     }
 
     if (user.id === responserId) {
       await this.userRepository.softDelete(user.id)
-      this.exceptionHandler.SucessfullyDestroyed(user)
-      return {data: user}
+      return this.responseHandler.SucessfullyDestroyed(user)
     } else {
-      this.exceptionHandler.CantDeleteOtherUser()
-      return { error: 'CantDeleteOtherUser' }
+      return this.responseHandler.CantDeleteOtherUser<object>()
     }
   }
 
   public async verifyEmail(token: string|undefined): Promise<ApiResponse<boolean>> {
     if (!token) {
-      this.exceptionHandler.BadRequest()
-      return { data: false, error: 'BadRequest' }
+      return this.responseHandler.BadRequest<object>()
     }
 
     const findToken = await this.tokenRepository.findByToken(token) 
 
     if (!findToken) {
-      this.exceptionHandler.Unauthenticated()
-      return { data: false, error: 'Unauthenticated' }
+      return this.responseHandler.Unauthenticated<object>()
     }
 
     const user = await this.tokenRepository.getUser(findToken.id)
@@ -113,18 +100,15 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
     await this.userRepository.update(user.id, user)
     await this.tokenRepository.delete(findToken.id)
 
-    this.exceptionHandler.SuccessfullyAuthenticated()
-    return { data: true }
+    return this.responseHandler.SuccessfullyAuthenticated<object>()
   }
 
-  public async requestPasswordChange(user: UserEntity|undefined): Promise<ApiResponse<boolean>> {
+  public async requestPasswordChange(user: UserEntity|undefined): Promise<ApiResponse<EmailSended>> {
     if (!user) {
-      this.exceptionHandler.Unauthenticated()
-      return { data: false, error: 'Unauthenticated' }
+      return this.responseHandler.Unauthenticated<object>()
     }
-    await this.mailService.sendUserResetPasswordMail(user)
-    this.exceptionHandler.EmailSended()
-    return { data: true }
+    const response = await this.mailService.sendUserResetPasswordMail(user)
+    return this.responseHandler.EmailSended(response)
   }
 
   public async restartPassword(langContract: ExceptionContract, token: string|undefined, body: RestartPasswordInsert): Promise<GenericResponse> {

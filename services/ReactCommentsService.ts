@@ -1,45 +1,45 @@
 import { BaseHTTPService } from "./BaseHTTPService"
-import { CommentReactionEntity, CommentEntity, CommentReactionInsert, UserEntity, getExibitionReaction, ReactionEntity } from '../entities'
-import { CommentRepository, ExceptionHandler, ReactCommentRepository } from '../contracts'
-import { ReactCommentsUsecase } from '../usecases'
+import { CommentReactionEntity, CommentEntity, CommentReactionInsert, UserEntity, getExibitionReaction, ReactionEntity, ExibitionReaction } from '../entities'
+import { CommentRepository, ResponseHandler, ReactCommentRepository } from '../contracts'
+import { ApiResponse, ReactCommentsUsecase } from '../usecases'
 
 export class ReactCommentsService extends BaseHTTPService implements ReactCommentsUsecase {
   constructor(
     private readonly reactCommentRepository: ReactCommentRepository,
     private readonly commentRepository: CommentRepository,
-    public exceptionHandler: ExceptionHandler
-  ) { super(exceptionHandler) }
+    public responseHandler: ResponseHandler
+  ) { super(responseHandler) }
 
-  public async show(commentId: CommentEntity['id']): Promise<void> {
+  public async show(commentId: CommentEntity['id']): Promise<ApiResponse<ExibitionReaction[]>> {
     const comment = await this.commentRepository.find(commentId)
     
     if (!comment) {
-      return this.exceptionHandler.UndefinedId()
+      return this.responseHandler.UndefinedId<object>()
     }
 
     const bruteReactions =
       await this.reactCommentRepository.getBruteReactions(commentId)
 
     const reactions = getExibitionReaction(bruteReactions)
-    this.exceptionHandler.SucessfullyRecovered(reactions)
+    return this.responseHandler.SucessfullyRecovered(reactions)
   }
 
-  public async store(userId: UserEntity['id']|undefined, body: CommentReactionInsert): Promise<void> {
+  public async store(userId: UserEntity['id']|undefined, body: CommentReactionInsert): Promise<ApiResponse<CommentReactionEntity>> {
     if (!userId) {
-      return this.exceptionHandler.InvalidUser()
+      return this.responseHandler.InvalidUser<object>()
     }
 
     const comment = await this.commentRepository.find(body.commentId)
     if (!comment) {
-      return this.exceptionHandler.NotFound()
+      return this.responseHandler.NotFound<object>()
     }
 
     if (comment.authorId == userId) {
-      return this.exceptionHandler.CantReactYourself()
+      return this.responseHandler.CantReactYourself<object>()
     }
 
     if (ReactionEntity.reactionIsConclusive(body.type)) {
-      return this.exceptionHandler.CantUseConclusiveReactionInComment()
+      return this.responseHandler.CantUseConclusiveReactionInComment<object>()
     }
 
     const couldFind = await this.reactCommentRepository.getCertainReaction(
@@ -54,24 +54,24 @@ export class ReactCommentsService extends BaseHTTPService implements ReactCommen
       { ...body, userId: userId }
     )
 
-    this.exceptionHandler.SucessfullyCreated(reaction)
+    return this.responseHandler.SucessfullyCreated(reaction)
   }
 
-  public async destroy(userId: UserEntity['id']|undefined, reactCommentId: CommentReactionEntity['id']): Promise<void> {
+  public async destroy(userId: UserEntity['id']|undefined, reactCommentId: CommentReactionEntity['id']): Promise<ApiResponse<CommentReactionEntity>> {
     if (!userId) {
-      return this.exceptionHandler.Unauthenticated()
+      return this.responseHandler.Unauthenticated<object>()
     }
 
     const reaction = await this.reactCommentRepository.find(reactCommentId)
     if (reaction) {
       if (userId === reaction.userId) {
         await this.reactCommentRepository.delete(reactCommentId)
-        this.exceptionHandler.SucessfullyDestroyed(reaction)
+        return this.responseHandler.SucessfullyDestroyed(reaction)
       } else {
-        this.exceptionHandler.CantDeleteOthersReaction()
+        return this.responseHandler.CantDeleteOthersReaction<object>()
       }
     } else {
-      this.exceptionHandler.UndefinedId()
+      return this.responseHandler.UndefinedId<object>()
     }
   }
 }
