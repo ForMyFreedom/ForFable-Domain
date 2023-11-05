@@ -13,4 +13,8 @@ export interface CommentsUsecase {
   destroy(userId: UserEntity['id']|undefined, commentId: CommentEntity['id']): Promise<ApiResponse<CommentEntity>>
 }
 
-export interface CommentsController extends CommentsUsecase { }
+export interface CommentsController extends Omit<CommentsUsecase, 'store'|'update'|'destroy'> {
+  store(body: CommentInsert): Promise<ApiResponse<CommentEntity>>
+  update(commentId: CommentEntity['id'], body: Partial<CommentInsert>): Promise<ApiResponse<CommentEntity>>
+  destroy(commentId: CommentEntity['id']): Promise<ApiResponse<CommentEntity>>
+}

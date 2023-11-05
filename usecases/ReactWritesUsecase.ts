@@ -7,6 +7,9 @@ export interface ReactWritesUsecase {
   destroy(userId: UserEntity['id']|undefined, reactionId: WriteReactionEntity['id']): Promise<ApiResponse<WriteReactionEntity>>
 }
 
-export interface ReactWritesController extends ReactWritesUsecase { }
+export interface ReactWritesController extends Omit<ReactWritesUsecase, 'store'|'destroy'> {
+  store(body: WriteReactionInsert): Promise<ApiResponse<WriteReactionEntity>>
+  destroy(reactionId: WriteReactionEntity['id']): Promise<ApiResponse<WriteReactionEntity>>
+}
 
 

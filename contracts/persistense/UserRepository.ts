@@ -1,4 +1,4 @@
-import { Pagination } from "@/ForFable-Domain";
+import { Pagination } from "ForFable-Domain/usecases";
 import { PasswordInsert, PromptEntity, ProposalEntity, UserEntity, UserInsert } from "../../entities";
 import { DefaultRepository } from "./_DefaultRepository";
 

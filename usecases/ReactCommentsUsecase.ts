@@ -7,4 +7,7 @@ export interface ReactCommentsUsecase {
   destroy(userId: UserEntity['id']|undefined, reactCommentId: CommentReactionEntity['id']): Promise<ApiResponse<CommentReactionEntity>>
 }
 
-export interface ReactCommentsController extends ReactCommentsUsecase { }
+export interface ReactCommentsController extends Omit<ReactCommentsUsecase, 'store'|'destroy'> {
+  store(body: CommentReactionInsert): Promise<ApiResponse<CommentReactionEntity>>
+  destroy(reactCommentId: CommentReactionEntity['id']): Promise<ApiResponse<CommentReactionEntity>>
+}
