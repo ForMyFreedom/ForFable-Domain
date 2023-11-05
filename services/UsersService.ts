@@ -1,7 +1,7 @@
 import { BaseHTTPService } from './BaseHTTPService'
 import { Pagination, ApiResponse, GenericResponse } from '../usecases/BaseUsecase'
 import { ExceptionContract, ResponseHandler, TokenRepository, UserRepository } from '../contracts'
-import { RestartPasswordInsert, UserEntity, UserInsert, UserUpdate } from '../entities'
+import { PromptEntity, ProposalEntity, RestartPasswordInsert, UserEntity, UserInsert, UserUpdate } from '../entities'
 import { EmailSended, MailUsecase, UsersUsecase } from '../usecases'
 import { prettifyErrorList } from '../utils'
 
@@ -15,6 +15,18 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
 
   public async index(page: number, limit: number): Promise<Pagination<UserEntity>> {
     const response = await this.userRepository.findAll(page, limit)
+    return this.responseHandler.SucessfullyRecovered(response)
+  }
+
+  public async indexWritesByAuthor(authorId: number, page?: number | undefined, limit?: number | undefined): Promise<Pagination<PromptEntity | ProposalEntity>> {
+    const response = await this.userRepository.indexWritesByAuthor(authorId, page, limit)
+    /* // @
+    if(response?.all) {
+      response.all = response.all.sort((a, b) => {
+        return DateTime.fromISO(b.write.createdAt.toString()).toUnixInteger() - DateTime.fromISO(a.write.createdAt.toString()).toUnixInteger()
+      })
+    }
+    */
     return this.responseHandler.SucessfullyRecovered(response)
   }
 
