@@ -7,7 +7,7 @@ type ExtraInfoOnCreate = {
 }
 
 export interface CommentRepository extends DefaultRepository<CommentInsert, CommentEntity> {
-    getByWrite(writeId: WriteEntity['id'], page?: number, limit?: number): Promise<Pagination<CommentEntity>>
+    getByWrite(writeId: WriteEntity['id'], page?: number, limit?: number): Promise<Pagination<CommentEntity>['data']>
     loadAuthors(commentArray: CommentEntity[]): Promise<UserEntity[]>
     create(body: CommentInsert & ExtraInfoOnCreate): Promise<CommentEntity>
 }

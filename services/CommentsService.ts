@@ -16,7 +16,7 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
       return this.responseHandler.UndefinedId()
     }
     const comments = await this.commentRepository.getByWrite(writeId, page, limit)
-    const commentsArray = comments.data?.all
+    const commentsArray = comments?.all
     if(!commentsArray){
       return this.responseHandler.InternalServerError()
     }

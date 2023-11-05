@@ -128,7 +128,7 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
 
   public async indexByAuthor(authorId: number, page?: number, limit?: number): Promise<Pagination<PromptEntity>> {
     const response = await this.promptsRepository.findAllByAuthor(authorId, page, limit)
-    return this.responseHandler.SucessfullyRecovered<Pagination<PromptEntity>['data']>(response.data)
+    return this.responseHandler.SucessfullyRecovered(response)
   }
 
   private async couldSetGenres(prompt: PromptEntity, genreIds: GenreEntity['id'][]): Promise<boolean> {

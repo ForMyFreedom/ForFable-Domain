@@ -16,9 +16,9 @@ export interface ProposalRepository
       create(body: Omit<ProposalInsert, 'text'> & ExtraInfoOnCreate): Promise<ProposalEntity>
       update(entityId: ProposalEntity['id'], partialBody: Partial<ProposalInsert> & ExtraInfoOnUpdate): Promise<ProposalEntity|null>
       fullFind(proposalId: ProposalEntity['id']): Promise<ProposalEntity|null>
-      getProposalsByPrompt(promptId: PromptEntity['id'], page?: number, limit?: number): Promise<Pagination<ProposalEntity>>
-      getProposalsByAuthor(authorId: WriteEntity['authorId'], page?: number, limit?: number): Promise<Pagination<ProposalEntity>>
-      getIndexedProposalsByPrompt(promptId: PromptEntity['id'], index: number): Promise<Pagination<ProposalEntity>>
+      getProposalsByPrompt(promptId: PromptEntity['id'], page?: number, limit?: number): Promise<Pagination<ProposalEntity>['data']>
+      getProposalsByAuthor(authorId: number, page?: number, limit?: number): Promise<Pagination<ProposalEntity>['data']>
+      getIndexedProposalsByPrompt(promptId: PromptEntity['id'], index: number, page?: number, limit?: number): Promise<Pagination<ProposalEntity>['data']>
       findByWriteId(writeId: WriteEntity['id']): Promise<ProposalEntity | null>
       getAmountOfConclusiveReactions(proposal: ProposalEntity): Promise<number>
       getWrite(proposal: ProposalEntity): Promise<WriteEntity>

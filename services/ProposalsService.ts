@@ -17,7 +17,7 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
       return this.responseHandler.UndefinedId()
     }
     const proposals = await this.proposalsRepository.getProposalsByPrompt(promptId)
-    return this.responseHandler.SucessfullyRecovered<Pagination<ProposalEntity>['data']>(proposals.data)
+    return this.responseHandler.SucessfullyRecovered(proposals)
   }
 
   public async actualIndexByPrompt(promptId: PromptEntity['id']): Promise<Pagination<ProposalEntity>> {
@@ -26,7 +26,7 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
       return this.responseHandler.UndefinedId()
     }
     const proposals = await this.proposalsRepository.getIndexedProposalsByPrompt(promptId, prompt.currentIndex)
-    return this.responseHandler.SucessfullyRecovered<Pagination<ProposalEntity>['data']>(proposals.data)
+    return this.responseHandler.SucessfullyRecovered(proposals)
   }
 
   public async show(proposalId: ProposalEntity['id']): Promise<ApiResponse<ProposalEntity>> {
@@ -120,7 +120,7 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
 
   public async indexByAuthor(authorId: number, page?: number | undefined, limit?: number | undefined): Promise<Pagination<ProposalEntity>> {
     const response = await this.proposalsRepository.getProposalsByAuthor(authorId, page, limit)
-    return this.responseHandler.SucessfullyRecovered<Pagination<ProposalEntity>['data']>(response.data)
+    return this.responseHandler.SucessfullyRecovered(response)
   }
 }
 
