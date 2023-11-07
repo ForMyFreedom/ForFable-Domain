@@ -1,5 +1,5 @@
 import { Pagination } from "ForFable-Domain/usecases";
-import { PasswordInsert, PromptEntity, ProposalEntity, UserEntity, UserInsert } from "../../entities";
+import { PasswordInsert, PromptEntityWithWrite, ProposalEntityWithWrite, UserEntity, UserInsert } from "../../entities";
 import { DefaultRepository } from "./_DefaultRepository";
 
 type ExtraInfoOnCreate = {
@@ -13,7 +13,7 @@ export interface UserRepository extends DefaultRepository<UserInsert, UserEntity
     findByIdentify(identify: string): Promise<UserEntity|null>
     passwordIsValid(body: PasswordInsert): Promise<{errors?: string[]}>
     softDelete(userId: UserEntity['id']): Promise<UserEntity|null>
-    indexWritesByAuthor(authorId: UserEntity['id'], page?: number, limit?: number): Promise<Pagination<PromptEntity|ProposalEntity>['data']>
+    indexWritesByAuthor(authorId: UserEntity['id'], page?: number, limit?: number): Promise<Pagination<(ProposalEntityWithWrite | PromptEntityWithWrite)>['data']>
 }
 
 export interface AuthWrapper {

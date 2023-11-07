@@ -26,6 +26,8 @@ export interface PromptEntity {
   historyText: string            // Not the prompt, but prompt + all proposals in order
 }
 
+export type  PromptEntityWithWrite = PromptEntity & { write: WriteEntity }
+
 export namespace PromptEntity {
   export async function calculatePromptPopularity(prompt: PromptEntity, usersThatParticipated: {id: number}[]): Promise<void> {
     prompt.popularity = removeDuplicate(usersThatParticipated).length

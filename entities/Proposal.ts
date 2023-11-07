@@ -14,3 +14,5 @@ export interface ProposalEntity {
   definitive: boolean
   popularity: number // Good Reactions - Bad Reactions
 }
+
+export type ProposalEntityWithWrite = ProposalEntity & { write: WriteEntity }
