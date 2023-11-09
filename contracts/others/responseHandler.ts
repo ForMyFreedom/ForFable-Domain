@@ -42,6 +42,7 @@ export interface ExceptionContract {
   PasswordRequired: string
   PasswordRegex: string
   BadRequest: string
+  ImageToLarge: string
   EmailSended: string
   CantComplaintToDailyWrite: string
 }

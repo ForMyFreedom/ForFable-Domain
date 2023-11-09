@@ -67,7 +67,7 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
 
     if (responserId === user.id) {
       const finalBody = ! user.isPremium
-        ? { name: partialBody.name || user.name, imageUrl: partialBody.imageUrl || user.imageUrl }
+        ? { name: partialBody.name || user.name }
         : partialBody
       const response = await this.userRepository.update(user.id, finalBody)
       return this.responseHandler.SucessfullyUpdated(response)

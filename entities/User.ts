@@ -2,18 +2,18 @@ import { DateTime } from 'luxon'
 import { ConstantEntity } from './Constant'
 
 export type UserInsert = PasswordInsert & Pick<UserEntity,
-  'name'|'email'|'imageUrl'|'birthDate'
+  'name'|'email'|'birthDate'
 >
 
 export type UserUpdate = Pick<UserEntity,
-  'name'|'imageUrl'|'nickname'|'primaryColorHex'|'secondaryColorHex'
+  'name'|'nickname'|'primaryColorHex'|'secondaryColorHex'
 >
 
 export interface UserEntity {
   id: number
   name: string
   nickname: string
-  imageUrl: string
+  imageUrl: string | null
   isAdmin: boolean
   isPremium: boolean
   email: string

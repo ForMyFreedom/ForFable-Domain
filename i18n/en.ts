@@ -44,5 +44,6 @@ export const englishExceptionContract: ExceptionContract = {
     BadRequest: 'Bad Request',
     EmailSended: 'Email sended!',
     CantComplaintToDailyWrite: "You can't complaint to a daily write",
-    InternalServerError: "Erro interno do servidor!"
+    InternalServerError: "Internal Server Error",
+    ImageToLarge: "Image to large",
 }
