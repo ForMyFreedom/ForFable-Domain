@@ -1,10 +1,9 @@
 
 import { BaseHTTPService } from './BaseHTTPService'
 import { ApiResponse } from "../usecases/BaseUsecase"
-import { ResponseHandler, ImageRepository, ConstantsRepository } from '../contracts'
-import { ImageFolders, ImageUrl, ImagesUsecase } from '../usecases'
+import { ResponseHandler, ImageRepository, ConstantsRepository, UserRepository } from '../contracts'
+import { ImageFolders, ImageInsert, ImageUrl, ImagesUsecase } from '../usecases'
 import { UserEntity } from '../entities'
-import { ImageInsert, UserRepository } from '@ioc:forfabledomain'
 
 export class ImageService extends BaseHTTPService implements ImagesUsecase {
   constructor(

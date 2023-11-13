@@ -19,6 +19,6 @@ export interface ImagesUsecase {
 }
 
 export interface ImagesController extends Omit<ImagesUsecase, 'updateUserImage'|'postImage'> {
-  postImage(imageBody: ImageInsert, folder: Omit<ImageFolders, 'user'>): Promise<ApiResponse<ImageUrl>>
-  updateUserImage(image: ImageInsert): Promise<ApiResponse<ImageUrl>>
+  postImage(file: File, folder: Omit<ImageFolders, 'user'>): Promise<ApiResponse<ImageUrl>>
+  updateUserImage(file: File): Promise<ApiResponse<ImageUrl>>
 }
