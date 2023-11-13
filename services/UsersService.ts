@@ -106,7 +106,8 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
       return this.responseHandler.Unauthenticated()
     }
 
-    const user = await this.tokenRepository.getUser(findToken.id)
+    const user = await this.tokenRepository.getUser(findToken)
+    if (!user) { return this.responseHandler.NotFound() }
     user.emailVerified = true
     await this.userRepository.update(user.id, user)
     await this.tokenRepository.delete(findToken.id)
@@ -138,7 +139,8 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
       return { error: langContract.TokenIsInvalid }
     }
 
-    const user = await this.tokenRepository.getUser(findToken.id)
+    const user = await this.tokenRepository.getUser(findToken)
+    if (!user) { return { error: langContract.NotFound } }
     user.password = body.password
     await this.userRepository.update(user.id, user)
     await this.tokenRepository.delete(findToken.id)
