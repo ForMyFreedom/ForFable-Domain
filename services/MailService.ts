@@ -1,8 +1,8 @@
 import { BaseHTTPService } from './BaseHTTPService'
-import { ApiResponse } from "../usecases/BaseUsecase"
+import { GenericResponse } from "../usecases/BaseUsecase"
 import { MailSender, ResponseHandler, TokenRepository } from '../contracts'
 import { UserEntity } from '../entities'
-import { EmailSended, MailUsecase } from '../usecases'
+import { MailUsecase } from '../usecases'
 
 export class MailService extends BaseHTTPService implements MailUsecase {
   constructor(
@@ -11,14 +11,14 @@ export class MailService extends BaseHTTPService implements MailUsecase {
     public responseHandler: ResponseHandler
   ) { super(responseHandler) }
 
-  public async sendUserResetPasswordMail(user: UserEntity): Promise<ApiResponse<EmailSended>> {
+  public async sendUserResetPasswordMail(user: UserEntity): Promise<GenericResponse> {
     const token = await this.tokenRepository.create(user, 'reset_password')
-    return { data: await this.mailSender.sendUserRequestPasswordMail(user, token) }
+    return { state: await this.mailSender.sendUserRequestPasswordMail(user, token) ? 'Sucess' : 'Failure' }
   }
 
-  public async sendUserVerificationMail(user: UserEntity): Promise<ApiResponse<EmailSended>> {
+  public async sendUserVerificationMail(user: UserEntity): Promise<GenericResponse> {
     const token = await this.tokenRepository.create(user, 'email_verification')
-    return { data: await this.mailSender.sendUserVerificationMail(user, token) }
+    return { state: await this.mailSender.sendUserVerificationMail(user, token) ? 'Sucess' : 'Failure' }
   }
 }
 

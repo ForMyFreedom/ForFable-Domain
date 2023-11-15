@@ -1,11 +1,10 @@
-import { ApiResponse } from '..'
+import { GenericResponse } from '..'
 import { UserEntity } from '../entities'
 
-export type EmailSended = { sended: boolean }
 
 export interface MailUsecase {
-  sendUserResetPasswordMail(user: UserEntity): Promise<ApiResponse<EmailSended>>
-  sendUserVerificationMail(user: UserEntity):  Promise<ApiResponse<EmailSended>>
+  sendUserResetPasswordMail(user: UserEntity): Promise<GenericResponse>
+  sendUserVerificationMail(user: UserEntity):  Promise<GenericResponse>
 }
 
 export interface MailController extends MailUsecase { }

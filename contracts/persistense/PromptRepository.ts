@@ -1,4 +1,4 @@
-import { Pagination } from "../../usecases/BaseUsecase";
+import { PaginationData } from "../../usecases/BaseUsecase";
 import { PromptInsert, PromptEntity, GenreEntity, WriteEntity, ProposalEntity } from "../../entities";
 import { DefaultRepository } from "./_DefaultRepository";
 
@@ -13,7 +13,7 @@ export interface PromptRepository extends DefaultRepository<PromptInsert & Extra
     setGenresInPrompt(prompt: PromptEntity, genreIds: GenreEntity['id'][]): Promise<boolean>
     promptIsConcluded(promptId: PromptEntity['id']): Promise<boolean>
     findByWriteId(writeId: WriteEntity['id']): Promise<PromptEntity | null>
-    findAllByAuthor(authorId: number, page?: number, limit?: number): Promise<Pagination<PromptEntity>['data']>
+    findAllByAuthor(authorId: number, page?: number, limit?: number): Promise<PaginationData<PromptEntity>>
     getAllDailyPrompt(): Promise<PromptEntity[]>
     getProposals(prompt: PromptEntity|PromptEntity['id']): Promise<ProposalEntity[]>
     getWrite(prompt: PromptEntity): Promise<WriteEntity>

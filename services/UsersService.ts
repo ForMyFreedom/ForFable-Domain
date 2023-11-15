@@ -1,8 +1,8 @@
 import { BaseHTTPService } from './BaseHTTPService'
 import { Pagination, ApiResponse, GenericResponse } from '../usecases/BaseUsecase'
-import { ExceptionContract, ResponseHandler, TokenRepository, UserRepository } from '../contracts'
+import { ResponseHandler, TokenRepository, UserRepository } from '../contracts'
 import { PromptEntityWithWrite, ProposalEntityWithWrite, RestartPasswordInsert, UserEntity, UserInsert, UserUpdate } from '../entities'
-import { EmailSended, MailUsecase, UsersUsecase } from '../usecases'
+import { MailUsecase, UsersUsecase } from '../usecases'
 import { prettifyErrorList } from '../utils'
 import { DateTime } from 'luxon'
 
@@ -115,36 +115,36 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
     return this.responseHandler.SuccessfullyAuthenticated()
   }
 
-  public async requestPasswordChange(user: UserEntity|undefined): Promise<ApiResponse<EmailSended>> {
+  public async requestPasswordChange(user: UserEntity|undefined): Promise<ApiResponse<boolean>> {
     if (!user) {
       return this.responseHandler.Unauthenticated()
     }
     const response = await this.mailService.sendUserResetPasswordMail(user)
-    return this.responseHandler.EmailSended(response.data)
+    return this.responseHandler.EmailSended(response.state == 'Sucess' ? true : false)
   }
 
-  public async restartPassword(langContract: ExceptionContract, token: string|undefined, body: RestartPasswordInsert): Promise<GenericResponse> {
+  public async restartPassword(token: string|undefined, body: RestartPasswordInsert): Promise<GenericResponse> {
     if (!token) {
-      return { error: langContract.UndefinedToken }
+      return this.responseHandler.UndefinedToken()
     }
 
     const { errors } = await this.userRepository.passwordIsValid(body)
     if (errors) {
-      return { error: prettifyErrorList(errors) }
+      return { state: 'Failure', error: {error: prettifyErrorList(errors)} }
     }
 
     const findToken = await this.tokenRepository.findByToken(token)
 
     if (!findToken) {
-      return { error: langContract.TokenIsInvalid }
+      return this.responseHandler.TokenIsInvalid()
     }
 
     const user = await this.tokenRepository.getUser(findToken)
-    if (!user) { return { error: langContract.NotFound } }
+    if (!user) { return this.responseHandler.NotFound() }
     user.password = body.password
     await this.userRepository.update(user.id, user)
     await this.tokenRepository.delete(findToken.id)
 
-    return {}
+    return  { state: 'Sucess' }
   }
 }

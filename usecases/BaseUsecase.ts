@@ -1,21 +1,22 @@
 import { ExceptionContract } from ".."
 
-export type Pagination<T> = ApiResponse<{
-    all: T[],
-    meta: {
-      currentPage: number
-      firstPage: number
-      lastPage: number
-      totalItens: number
-    }
-}>
-  
-export type ApiResponse<T> = {
-    data?: T
-    error?: keyof ExceptionContract|object
+export type PaginationData<T> = {
+  all: T[],
+  meta: {
+    currentPage: number
+    firstPage: number
+    lastPage: number
+    totalItens: number
+  }
 }
 
-export type GenericResponse = {
-    error?: string|object
-}
+export type Pagination<T> = ApiResponse<PaginationData<T>>
+
+
+export type SucessApiResponse<T> = { state: 'Sucess', data: T }
+export type FailureApiResponse = { state: 'Failure', error: keyof ExceptionContract|object }
+
+export type ApiResponse<T> = SucessApiResponse<T> | FailureApiResponse
+
+export type GenericResponse = { state: 'Sucess' } | { state: 'Failure', error?: keyof ExceptionContract|object }
   

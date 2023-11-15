@@ -9,6 +9,7 @@ export interface ProposalsUsecase {
   store(userId: UserEntity['id']|undefined, body: ProposalInsert ): Promise<ApiResponse<ProposalEntity>>
   update(userId: UserEntity['id']|undefined, proposalId: ProposalEntity['id'], partialBody: Partial<ProposalInsert>): Promise<ApiResponse<ProposalEntity>>
   destroy(userId: UserEntity['id']|undefined, proposalId: ProposalEntity['id']): Promise<ApiResponse<ProposalEntity>>
+  getAuthor(proposalId: ProposalEntity['id']): Promise<ApiResponse<UserEntity>>
 }
 
 export interface ProposalsController extends Omit<ProposalsUsecase, 'store'|'update'|'destroy'> {

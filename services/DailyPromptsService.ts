@@ -1,8 +1,7 @@
 import { GenreEntity, ThematicWordEntity } from '../entities'
 import { GenresRepository, PromptRepository, WriteRepository } from '../contracts'
-import { DailyPromptsUsecase, InternalProcessResponse } from '../usecases'
+import { DailyPromptsUsecase, GenericResponse } from '../usecases'
 import { DateTime } from 'luxon'
-import { ApiResponse } from '..'
 
 export class DailyPromptsService implements DailyPromptsUsecase {
   public static SEPARATOR = ' | '
@@ -13,13 +12,13 @@ export class DailyPromptsService implements DailyPromptsUsecase {
     private readonly genreRepository: GenresRepository,
   ) { }
 
-  public async refreshDailyPrompt(): Promise<ApiResponse<InternalProcessResponse>> {
+  public async refreshDailyPrompt(): Promise<GenericResponse> {
     console.log(`${DateTime.now()}  |  Reseting Daily Prompts!`)
     await this.deleteAllNonAppropriatedDailyPrompts()
     return await this.createDailyPromptsForEachGenre()
   }
 
-  public async deleteAllNonAppropriatedDailyPrompts(): Promise<ApiResponse<InternalProcessResponse>> {
+  public async deleteAllNonAppropriatedDailyPrompts(): Promise<GenericResponse> {
     const allDailyPrompts = await this.promptRepository.getAllDailyPrompt()
     for (const prompt of allDailyPrompts) {
       const write = await this.promptRepository.getWrite(prompt)
@@ -27,12 +26,12 @@ export class DailyPromptsService implements DailyPromptsUsecase {
         await this.promptRepository.delete(prompt.id)
       }
     }
-    return { data: { success: true } }
+    return { state: 'Sucess' }
   }
 
-  public async createDailyPromptsForEachGenre(): Promise<ApiResponse<InternalProcessResponse>> {
+  public async createDailyPromptsForEachGenre(): Promise<GenericResponse> {
     const allGenres = await this.genreRepository.findAll()
-    if(!allGenres) { return { data: { success: false } } }
+    if(!allGenres) { return { state: 'Failure', error: 'NotFound' } }
     for (const genre of allGenres.all) {
       for (let i = 0; i < genre.popularity; i++) {
         const newWrite = await this.writeRepository.create({
@@ -53,7 +52,7 @@ export class DailyPromptsService implements DailyPromptsUsecase {
       }
     }
 
-    return { data: { success: true } }
+    return { state: 'Sucess' }
   }
 
   private async getRandomText(genre: GenreEntity): Promise<string> {

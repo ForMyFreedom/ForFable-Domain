@@ -122,6 +122,15 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
     const response = await this.proposalsRepository.getProposalsByAuthor(authorId, page, limit)
     return this.responseHandler.SucessfullyRecovered(response)
   }
+
+  public async getAuthor(proposalId: number): Promise<ApiResponse<UserEntity>> {
+    const response = await this.proposalsRepository.getAuthor(proposalId)
+    if (response) {
+      return this.responseHandler.SucessfullyRecovered(response)
+    } else {
+      return this.responseHandler.UndefinedId()
+    }
+  }
 }
 
 
