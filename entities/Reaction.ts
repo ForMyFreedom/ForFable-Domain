@@ -101,3 +101,9 @@ export namespace ReactionEntity {
   }
 }
 
+export type ExibitionReaction = {type: ReactionType, amount: number}
+
+export type CleanReactionResponse = {
+  reactions: ExibitionReaction[]
+  userReaction: ReactionType|null
+}

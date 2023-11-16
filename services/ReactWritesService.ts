@@ -1,6 +1,6 @@
 import { BaseHTTPService } from './BaseHTTPService'
 import { ResponseHandler, ProposalRepository, WriteRepository, PromptRepository, ReactWriteRepository } from '../contracts'
-import { UserEntity, ReactionType, getExibitionReaction, WriteEntity, WriteReactionEntity, WriteReactionInsert, ReactionEntity, ExibitionReaction } from '../entities'
+import { UserEntity, ReactionType, WriteEntity, WriteReactionEntity, WriteReactionInsert, ReactionEntity, cleanReactionResponse, CleanReactionResponse } from '../entities'
 import { ApiResponse, ReactWritesUsecase } from '../usecases'
 
 export class ReactWritesService extends BaseHTTPService implements ReactWritesUsecase {
@@ -12,15 +12,19 @@ export class ReactWritesService extends BaseHTTPService implements ReactWritesUs
     public responseHandler: ResponseHandler
   ) { super(responseHandler) }
 
-  public async show(writeId: WriteEntity['id']): Promise<ApiResponse<ExibitionReaction[]>> {
+  public async show(userId: UserEntity['id']|undefined, writeId: WriteEntity['id']): Promise<ApiResponse<CleanReactionResponse>> {
     const write = await this.writeRepository.find(writeId)
     if (!write) {
       return this.responseHandler.UndefinedId()
     }
     const bruteReactions =
       await this.reactWriteRepository.getBruteReactions(writeId)
-    
-    const reactions = getExibitionReaction(bruteReactions)
+  
+    const userReaction: ReactionType|undefined = (userId) ?
+      bruteReactions.find(reaction => reaction.userId === userId)?.type :
+      undefined
+
+    const reactions = cleanReactionResponse(bruteReactions, userReaction)
     return this.responseHandler.SucessfullyRecovered(reactions)
   }
 

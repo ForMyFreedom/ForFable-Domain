@@ -1,5 +1,5 @@
 import { BaseHTTPService } from "./BaseHTTPService"
-import { CommentReactionEntity, CommentEntity, CommentReactionInsert, UserEntity, getExibitionReaction, ReactionEntity, ExibitionReaction } from '../entities'
+import { CommentReactionEntity, CommentEntity, CommentReactionInsert, UserEntity, ReactionEntity, cleanReactionResponse, CleanReactionResponse, ReactionType } from '../entities'
 import { CommentRepository, ResponseHandler, ReactCommentRepository } from '../contracts'
 import { ApiResponse, ReactCommentsUsecase } from '../usecases'
 
@@ -10,7 +10,7 @@ export class ReactCommentsService extends BaseHTTPService implements ReactCommen
     public responseHandler: ResponseHandler
   ) { super(responseHandler) }
 
-  public async show(commentId: CommentEntity['id']): Promise<ApiResponse<ExibitionReaction[]>> {
+  public async show(userId: UserEntity['id']|undefined, commentId: CommentEntity['id']): Promise<ApiResponse<CleanReactionResponse>> {
     const comment = await this.commentRepository.find(commentId)
     
     if (!comment) {
@@ -20,7 +20,11 @@ export class ReactCommentsService extends BaseHTTPService implements ReactCommen
     const bruteReactions =
       await this.reactCommentRepository.getBruteReactions(commentId)
 
-    const reactions = getExibitionReaction(bruteReactions)
+    const userReaction: ReactionType|undefined = (userId) ?
+      bruteReactions.find(reaction => reaction.userId === userId)?.type :
+      undefined
+
+    const reactions = cleanReactionResponse(bruteReactions, userReaction)
     return this.responseHandler.SucessfullyRecovered(reactions)
   }
 

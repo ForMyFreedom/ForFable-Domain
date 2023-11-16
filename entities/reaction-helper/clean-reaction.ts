@@ -1,8 +1,11 @@
-import { ReactionEntity, ReactionType } from "../Reaction"
+import { CleanReactionResponse, ExibitionReaction, ReactionEntity, ReactionType } from "../Reaction"
 
-export type ExibitionReaction = {type: ReactionType, amount: number} // @useless, it's important the userId be present
+export function cleanReactionResponse(reactions: ReactionEntity[], userReaction: ReactionType|undefined): CleanReactionResponse {
+  const cleanReactions = getExibitionReaction(reactions)
+  return { reactions: cleanReactions, userReaction: userReaction || null }
+}
 
-export function getExibitionReaction(reactions: ReactionEntity[]): ExibitionReaction[] {
+function getExibitionReaction(reactions: ReactionEntity[]): ExibitionReaction[] {
   let cleanReactions: ExibitionReaction[] = getBruteExitionReactionList(reactions)
   const positiveConclusive: number = getPositiveConclusiveReactionAmount(cleanReactions)
 
@@ -15,9 +18,16 @@ export function getExibitionReaction(reactions: ReactionEntity[]): ExibitionReac
 }
 
 function getBruteExitionReactionList(reactions: ReactionEntity[]): ExibitionReaction[] {
-  return reactions.map((value: ReactionEntity) => {
-    return { type: value.type, amount: value.id }
-  })
+  const list: ExibitionReaction[] = []
+  for(const react of reactions) {
+    const reaction = list.find((value)=>value.type === react.type)
+    if (reaction) {
+      reaction.amount++
+    } else {
+      list.push({type: react.type, amount: 1})
+    }
+  }
+  return list
 }
 
 function getPositiveConclusiveReactionAmount(reactions: ExibitionReaction[]): number {
