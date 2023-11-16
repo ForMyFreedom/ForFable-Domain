@@ -1,6 +1,6 @@
 import { ReactionEntity, ReactionType } from "../Reaction"
 
-export type ExibitionReaction = {type: ReactionType, amount: number}
+export type ExibitionReaction = {type: ReactionType, amount: number} // @useless, it's important the userId be present
 
 export function getExibitionReaction(reactions: ReactionEntity[]): ExibitionReaction[] {
   let cleanReactions: ExibitionReaction[] = getBruteExitionReactionList(reactions)
