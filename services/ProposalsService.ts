@@ -1,5 +1,5 @@
 import { BaseHTTPService } from "./BaseHTTPService"
-import { ProposalEntity, PromptEntity, UserEntity, ProposalInsert } from "../entities"
+import { ProposalEntity, PromptEntity, UserEntity, ProposalInsert, ProposalEntityWithWrite } from "../entities"
 import { ResponseHandler, WriteRepository, PromptRepository, ProposalRepository } from "../contracts"
 import { ApiResponse, Pagination, ProposalsUsecase } from '../usecases'
 
@@ -29,7 +29,7 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
     return this.responseHandler.SucessfullyRecovered(proposals)
   }
 
-  public async show(proposalId: ProposalEntity['id']): Promise<ApiResponse<ProposalEntity>> {
+  public async show(proposalId: ProposalEntity['id']): Promise<ApiResponse<ProposalEntityWithWrite>> {
     const proposal = await this.proposalsRepository.fullFind(proposalId)
     if (proposal) {
       return this.responseHandler.SucessfullyRecovered(proposal)
@@ -90,6 +90,8 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
     }
     const writeProposal = await this.proposalsRepository.getWrite(proposal)
 
+    if(!writeProposal) { return this.responseHandler.UndefinedWrite() }
+
     if (writeProposal.authorId !== userId) {
       return this.responseHandler.CantEditOthersWrite()
     }
@@ -109,6 +111,8 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
     }
 
     const proposalWrite = await this.proposalsRepository.getWrite(proposal)
+
+    if(!proposalWrite) { return this.responseHandler.UndefinedWrite() }
 
     if (proposalWrite.authorId === userId) {
       await this.proposalsRepository.delete(proposalId)
