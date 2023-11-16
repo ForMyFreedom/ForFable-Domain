@@ -61,15 +61,15 @@ export class ReactCommentsService extends BaseHTTPService implements ReactCommen
     return this.responseHandler.SucessfullyCreated(reaction)
   }
 
-  public async destroy(userId: UserEntity['id']|undefined, reactCommentId: CommentReactionEntity['id']): Promise<ApiResponse<CommentReactionEntity>> {
+  public async destroy(userId: UserEntity['id']|undefined, commentId: CommentEntity['id']): Promise<ApiResponse<CommentReactionEntity>> {
     if (!userId) {
       return this.responseHandler.Unauthenticated()
     }
 
-    const reaction = await this.reactCommentRepository.find(reactCommentId)
+    const reaction = await this.reactCommentRepository.findByUserAndComment(userId, commentId)
     if (reaction) {
       if (userId === reaction.userId) {
-        await this.reactCommentRepository.delete(reactCommentId)
+        await this.reactCommentRepository.delete(reaction.id)
         return this.responseHandler.SucessfullyDestroyed(reaction)
       } else {
         return this.responseHandler.CantDeleteOthersReaction()

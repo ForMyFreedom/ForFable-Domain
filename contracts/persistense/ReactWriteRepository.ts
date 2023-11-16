@@ -10,4 +10,5 @@ export interface ReactWriteRepository extends DefaultRepository<WriteReactionIns
     getBruteReactions(writeId: WriteEntity['id']): Promise<WriteReactionEntity[]>
     getCertainReaction(userId: UserEntity['id'], writeId: WriteEntity['id']): Promise<WriteReactionEntity|null>
     getAuthor(reaction: WriteReactionEntity): Promise<UserEntity>
+    findByUserAndWrite(userId: UserEntity['id'], writeId: WriteEntity['id']): Promise<WriteReactionEntity|null>
 }

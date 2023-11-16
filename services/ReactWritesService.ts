@@ -73,18 +73,18 @@ export class ReactWritesService extends BaseHTTPService implements ReactWritesUs
     return this.responseHandler.SucessfullyCreated(reaction)
   }
 
-  public async destroy(userId: UserEntity['id']|undefined, reactionId: WriteReactionEntity['id']): Promise<ApiResponse<WriteReactionEntity>> {
+  public async destroy(userId: UserEntity['id']|undefined, writeId: WriteEntity['id']): Promise<ApiResponse<WriteReactionEntity>> {
     if (!userId) {
       return this.responseHandler.Unauthenticated()
     }
 
-    const reaction = await this.reactWriteRepository.find(reactionId)
+    const reaction = await this.reactWriteRepository.findByUserAndWrite(userId, writeId)
     if (!reaction) {
       return this.responseHandler.UndefinedId()
     }
   
     if (userId === reaction.userId) {
-      await this.reactWriteRepository.delete(reactionId)
+      await this.reactWriteRepository.delete(reaction.id)
       return this.responseHandler.SucessfullyDestroyed(reaction)
     } else {
       return this.responseHandler.CantDeleteOthersReaction()

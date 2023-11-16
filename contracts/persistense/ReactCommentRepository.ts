@@ -10,4 +10,5 @@ export interface ReactCommentRepository
     getBruteReactions(commentId: CommentEntity['id']): Promise<CommentReactionEntity[]>
     getCertainReaction(userId: UserEntity['id'], commentId: CommentEntity['id']): Promise<CommentReactionEntity|null>
     create(body: CommentReactionInsert & ExtraInfoOnCreate): Promise<CommentReactionEntity>
+    findByUserAndComment(userId: UserEntity['id'], commentId: CommentEntity['id']): Promise<CommentReactionEntity|null>
 }
