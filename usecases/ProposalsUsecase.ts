@@ -1,11 +1,12 @@
 import { ApiResponse, Pagination } from ".."
-import { ProposalEntity, PromptEntity, UserEntity, ProposalInsert } from "../entities"
+import { ProposalEntity, PromptEntity, UserEntity, ProposalInsert, ProposalEntityWithWrite } from "../entities"
+
 
 export interface ProposalsUsecase {
   indexByPrompt(promptId: PromptEntity['id'], page?: number, limit?: number): Promise<Pagination<ProposalEntity>>
   actualIndexByPrompt(promptId: PromptEntity['id']): Promise<Pagination<ProposalEntity>>
   indexByAuthor(authorId: UserEntity['id'], page?: number, limit?: number): Promise<Pagination<ProposalEntity>>
-  show(proposalId: ProposalEntity['id']): Promise<ApiResponse<ProposalEntity>>
+  show(proposalId: ProposalEntity['id']): Promise<ApiResponse<ProposalEntityWithWrite>>
   store(userId: UserEntity['id']|undefined, body: ProposalInsert ): Promise<ApiResponse<ProposalEntity>>
   update(userId: UserEntity['id']|undefined, proposalId: ProposalEntity['id'], partialBody: Partial<ProposalInsert>): Promise<ApiResponse<ProposalEntity>>
   destroy(userId: UserEntity['id']|undefined, proposalId: ProposalEntity['id']): Promise<ApiResponse<ProposalEntity>>

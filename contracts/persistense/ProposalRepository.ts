@@ -1,5 +1,5 @@
 import { PaginationData } from "../../usecases/BaseUsecase"
-import { ProposalInsert, ProposalEntity, WriteEntity, PromptEntity, UserEntity } from "../../entities";
+import { ProposalInsert, ProposalEntity, WriteEntity, PromptEntity, UserEntity, ProposalEntityWithWrite } from "../../entities";
 import { DefaultRepository } from "./_DefaultRepository";
 
 type ExtraInfoOnCreate = {
@@ -15,7 +15,7 @@ export interface ProposalRepository
     extends DefaultRepository<Omit<ProposalInsert, 'text'>, ProposalEntity> {
       create(body: Omit<ProposalInsert, 'text'> & ExtraInfoOnCreate): Promise<ProposalEntity>
       update(entityId: ProposalEntity['id'], partialBody: Partial<ProposalInsert> & ExtraInfoOnUpdate): Promise<ProposalEntity|null>
-      fullFind(proposalId: ProposalEntity['id']): Promise<ProposalEntity|null>
+      fullFind(proposalId: ProposalEntity['id']): Promise<ProposalEntityWithWrite|null>
       getProposalsByPrompt(promptId: PromptEntity['id'], page?: number, limit?: number): Promise<PaginationData<ProposalEntity>>
       getProposalsByAuthor(authorId: number, page?: number, limit?: number): Promise<PaginationData<ProposalEntity>>
       getIndexedProposalsByPrompt(promptId: PromptEntity['id'], index: number, page?: number, limit?: number): Promise<PaginationData<ProposalEntity>>
