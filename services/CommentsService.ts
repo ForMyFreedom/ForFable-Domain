@@ -1,8 +1,8 @@
 import { BaseHTTPService } from './BaseHTTPService'
-import { ApiResponse } from "../usecases/BaseUsecase"
+import { ApiResponse, PaginationData } from "../usecases/BaseUsecase"
 import { WriteRepository, ResponseHandler, CommentRepository } from '../contracts'
 import { WriteEntity, UserEntity, CommentEntity, CommentInsert } from '../entities'
-import { CommentsUsecase, EstruturatedCommentsWithAnswers } from '../usecases'
+import { CommentsUsecase, EstruturatedCommentsWithAnswers, WithUsers } from '../usecases'
 
 export class CommentsService extends BaseHTTPService implements CommentsUsecase {
   constructor(
@@ -11,18 +11,22 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
     public responseHandler: ResponseHandler
   ) { super(responseHandler) }
 
-  public async indexByWrite(writeId: WriteEntity['id'], page?: number, limit?: number): Promise<ApiResponse<EstruturatedCommentsWithAnswers>> {
+  public async indexByWrite(writeId: WriteEntity['id'], page?: number, limit?: number): Promise<ApiResponse<WithUsers<PaginationData<EstruturatedCommentsWithAnswers>>>> {
     if (! await this.writeRepository.find(writeId)) {
       return this.responseHandler.UndefinedId()
     }
     const comments = await this.commentRepository.getByWrite(writeId, page, limit)
-    const commentsArray = comments?.all
-    if(!commentsArray){
+    if(!comments?.all){
       return this.responseHandler.InternalServerError()
     }
-    const authors: UserEntity[] = await this.commentRepository.loadAuthors(commentsArray)
-    const finalComments: Partial<CommentEntity>[] = await estruturateCommentsWithAnswers(commentsArray)
-    const response = { comments: finalComments, authors: authors }
+
+    const authors: UserEntity[] = await this.commentRepository.loadAuthors(comments.all)
+
+    const estruturatedComments: PaginationData<EstruturatedCommentsWithAnswers> = {
+      ...comments, all: estruturateCommentsWithAnswers(comments.all)
+    }
+    
+    const response = { ...estruturatedComments, users: authors }
     return this.responseHandler.SucessfullyRecovered(response)
   }
 
@@ -98,11 +102,11 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
 
 
 
-async function estruturateCommentsWithAnswers(
+function estruturateCommentsWithAnswers(
   commentsArray: (CommentEntity & {answers?: CommentEntity[]})[]
-): Promise<(Partial<CommentEntity> & {answers?: CommentEntity[]})[]> {
-  commentsArray.sort((a, b) => a.id - b.id)
-  const newCommentsArray: (CommentEntity & {answers?: CommentEntity[]})[] = []
+): EstruturatedCommentsWithAnswers[] {
+  commentsArray = commentsArray.sort((a, b) => a.id - b.id)
+  const newCommentsArray: EstruturatedCommentsWithAnswers[] = []
   for (const comment of commentsArray) {
     const answerToId = comment.answerToId
     if (answerToId) {
@@ -114,7 +118,7 @@ async function estruturateCommentsWithAnswers(
         commentOwner.answers.push(comment)
       }
     } else {
-      newCommentsArray.push(comment)
+      newCommentsArray.push({comment: comment, answers: []})
     }
   }
   return newCommentsArray
