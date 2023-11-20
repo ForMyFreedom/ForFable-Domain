@@ -1,5 +1,5 @@
 import { BaseHTTPService } from "./BaseHTTPService"
-import { ProposalEntity, PromptEntity, UserEntity, ProposalInsert, ProposalEntityWithWrite } from "../entities"
+import { ProposalEntity, PromptEntity, UserEntity, ProposalInsert, FullProposalEntity } from "../entities"
 import { ResponseHandler, WriteRepository, PromptRepository, ProposalRepository } from "../contracts"
 import { ApiResponse, Pagination, ProposalsUsecase } from '../usecases'
 
@@ -29,7 +29,7 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
     return this.responseHandler.SucessfullyRecovered(proposals)
   }
 
-  public async show(proposalId: ProposalEntity['id']): Promise<ApiResponse<ProposalEntityWithWrite>> {
+  public async show(proposalId: ProposalEntity['id']): Promise<ApiResponse<FullProposalEntity>> {
     const proposal = await this.proposalsRepository.fullFind(proposalId)
     if (proposal) {
       return this.responseHandler.SucessfullyRecovered(proposal)

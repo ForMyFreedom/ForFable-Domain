@@ -13,6 +13,8 @@ export interface ProposalEntity {
   orderInHistory: number
   definitive: boolean
   popularity: number // Good Reactions - Bad Reactions
+  currentHistoryText: string
 }
 
 export type ProposalEntityWithWrite = ProposalEntity & { write: WriteEntity }
+export type FullProposalEntity = ProposalEntityWithWrite & { prompt: PromptEntity }
