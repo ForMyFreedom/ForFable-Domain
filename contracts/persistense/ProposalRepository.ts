@@ -5,6 +5,7 @@ import { DefaultRepository } from "./_DefaultRepository";
 type ExtraInfoOnCreate = {
     writeId: WriteEntity['id']
     orderInHistory: PromptEntity['currentIndex']
+    currentHistoryText: string
 }
 
 type ExtraInfoOnUpdate = {

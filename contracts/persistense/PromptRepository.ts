@@ -17,7 +17,5 @@ export interface PromptRepository extends DefaultRepository<PromptInsert & Extra
     getAllDailyPrompt(): Promise<PromptEntity[]>
     getProposals(prompt: PromptEntity|PromptEntity['id']): Promise<ProposalEntity[]>
     getWrite(prompt: PromptEntity): Promise<WriteEntity>
-    getHistoryToIndex(promptId: PromptEntity['id'], historyIndex: number): Promise<string>
-    getChoosenProposalInOrder(promptId: PromptEntity['id'], limitHistoryIndex?: number): Promise<ProposalEntity[]>
 }
 

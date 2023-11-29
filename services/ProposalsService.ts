@@ -74,6 +74,7 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
       writeId: proposalWrite.id,
       promptId: promptId,
       orderInHistory: prompt.currentIndex,
+      currentHistoryText: prompt.historyText
     })
 
     return this.responseHandler.SucessfullyCreated(proposal)
