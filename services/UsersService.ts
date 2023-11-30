@@ -130,7 +130,7 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
 
     const { errors } = await this.userRepository.passwordIsValid(body)
     if (errors) {
-      return { state: 'Failure', error: {error: prettifyErrorList(errors)} }
+      return { state: 'Failure', error: 'BadRequest', data: prettifyErrorList(errors) }
     }
 
     const findToken = await this.tokenRepository.findByToken(token)
@@ -145,6 +145,6 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
     await this.userRepository.update(user.id, user)
     await this.tokenRepository.delete(findToken.id)
 
-    return  { state: 'Sucess' }
+    return { state: 'Sucess', message: 'SucessfullyUpdated' }
   }
 }

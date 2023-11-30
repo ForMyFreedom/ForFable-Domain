@@ -26,7 +26,7 @@ export class DailyPromptsService implements DailyPromptsUsecase {
         await this.promptRepository.delete(prompt.id)
       }
     }
-    return { state: 'Sucess' }
+    return { state: 'Sucess', message: 'SucessfullyDestroyed' }
   }
 
   public async createDailyPromptsForEachGenre(): Promise<GenericResponse> {
@@ -52,7 +52,7 @@ export class DailyPromptsService implements DailyPromptsUsecase {
       }
     }
 
-    return { state: 'Sucess' }
+    return { state: 'Sucess', message: 'SucessfullyCreated' }
   }
 
   private async getRandomText(genre: GenreEntity): Promise<string> {
