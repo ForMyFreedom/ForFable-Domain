@@ -13,10 +13,9 @@ export type PaginationData<T> = {
 export type Pagination<T> = ApiResponse<PaginationData<T>>
 
 
-export type SucessApiResponse<T> = { state: 'Sucess', data: T }
-export type FailureApiResponse = { state: 'Failure', error: keyof ExceptionContract|object }
+export type SucessApiResponse<T> = { state: 'Sucess', message: keyof ExceptionContract, data: T }
+export type FailureApiResponse = { state: 'Failure', error: keyof ExceptionContract, data?: any }
 
 export type ApiResponse<T> = SucessApiResponse<T> | FailureApiResponse
 
-export type GenericResponse = { state: 'Sucess' } | { state: 'Failure', error?: keyof ExceptionContract|object }
-  
+export type GenericResponse = ApiResponse<any>
