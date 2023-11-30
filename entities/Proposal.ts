@@ -16,5 +16,5 @@ export interface ProposalEntity {
   currentHistoryText: string
 }
 
-export type ProposalEntityWithWrite = ProposalEntity & { write: WriteEntity }
+export type ProposalEntityWithWrite = ProposalEntity & { write: WriteEntity, promptName: string }
 export type FullProposalEntity = ProposalEntityWithWrite & { prompt: PromptEntity }
