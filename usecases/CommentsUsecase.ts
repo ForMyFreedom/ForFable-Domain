@@ -1,8 +1,8 @@
 import { ApiResponse, PaginationData } from "."
-import { CommentEntity, CommentInsert, UserEntity, WriteEntity } from "../entities"
+import { CommentEntity, CommentInsert, CommentReactionEntity, UserEntity, WriteEntity } from "../entities"
 
 export type EstruturatedCommentsWithAnswers = {
-  comment: Partial<CommentEntity>,
+  comment: CommentEntity & {reactions: CommentReactionEntity[]},
   answers: Partial<CommentEntity>[],
 }
 
