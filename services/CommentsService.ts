@@ -3,6 +3,7 @@ import { ApiResponse, PaginationData } from "../usecases/BaseUsecase"
 import { WriteRepository, ResponseHandler, CommentRepository } from '../contracts'
 import { WriteEntity, UserEntity, CommentEntity, CommentInsert } from '../entities'
 import { CommentsUsecase, EstruturatedCommentsWithAnswers, WithUsers } from '../usecases'
+import { CommentWithReactions } from '@ioc:forfabledomain'
 
 export class CommentsService extends BaseHTTPService implements CommentsUsecase {
   constructor(
@@ -103,7 +104,7 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
 
 
 function estruturateCommentsWithAnswers(
-  commentsArray: (CommentEntity & {answers?: CommentEntity[]})[]
+  commentsArray: (CommentWithReactions & {answers?: CommentEntity[]})[]
 ): EstruturatedCommentsWithAnswers[] {
   commentsArray = commentsArray.sort((a, b) => a.id - b.id)
   const newCommentsArray: EstruturatedCommentsWithAnswers[] = []
