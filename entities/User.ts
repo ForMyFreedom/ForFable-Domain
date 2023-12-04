@@ -38,7 +38,7 @@ export namespace UserEntity {
   }
 }
 
-export type UserWithToken = { user: UserEntity, token: string}
+export type UserWithToken = UserEntity & { token: string }
 
 export type PasswordInsert = {
   password: string
