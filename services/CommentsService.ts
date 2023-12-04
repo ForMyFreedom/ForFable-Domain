@@ -2,7 +2,7 @@ import { BaseHTTPService } from './BaseHTTPService'
 import { ApiResponse, PaginationData } from "../usecases/BaseUsecase"
 import { WriteRepository, ResponseHandler, CommentRepository } from '../contracts'
 import { WriteEntity, UserEntity, CommentEntity, CommentInsert } from '../entities'
-import { CommentWithReactions, CommentsUsecase, EstruturatedCommentsWithAnswers, WithUsers } from '../usecases'
+import { CommentWithReactions, CommentsUsecase, CommentsWithAnswers, WithUsers } from '../usecases'
 
 export class CommentsService extends BaseHTTPService implements CommentsUsecase {
   constructor(
@@ -11,7 +11,7 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
     public responseHandler: ResponseHandler
   ) { super(responseHandler) }
 
-  public async indexByWrite(writeId: WriteEntity['id'], page?: number, limit?: number): Promise<ApiResponse<WithUsers<PaginationData<EstruturatedCommentsWithAnswers>>>> {
+  public async indexByWrite(writeId: WriteEntity['id'], page?: number, limit?: number): Promise<ApiResponse<WithUsers<PaginationData<CommentsWithAnswers>>>> {
     if (! await this.writeRepository.find(writeId)) {
       return this.responseHandler.UndefinedId()
     }
@@ -22,11 +22,9 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
 
     const authors: UserEntity[] = await this.commentRepository.loadAuthors(comments.all)
 
-    const estruturatedComments: PaginationData<EstruturatedCommentsWithAnswers> = {
-      ...comments, all: estruturateCommentsWithAnswers(comments.all)
-    }
-    
-    const response = { ...estruturatedComments, users: authors }
+    const finalComments = {...comments, all: estruturateCommentsWithAnswers(comments.all)}
+
+    const response = { ...finalComments, users: authors }
     return this.responseHandler.SucessfullyRecovered(response)
   }
 
@@ -101,12 +99,11 @@ export class CommentsService extends BaseHTTPService implements CommentsUsecase 
 }
 
 
-
 function estruturateCommentsWithAnswers(
   commentsArray: (CommentWithReactions & {answers?: CommentEntity[]})[]
-): EstruturatedCommentsWithAnswers[] {
+): CommentsWithAnswers[] {
   commentsArray = commentsArray.sort((a, b) => a.id - b.id)
-  const newCommentsArray: EstruturatedCommentsWithAnswers[] = []
+  const newCommentsArray: CommentsWithAnswers[] = []
   for (const comment of commentsArray) {
     const answerToId = comment.answerToId
     if (answerToId) {
@@ -118,9 +115,8 @@ function estruturateCommentsWithAnswers(
         commentOwner.answers.push(comment)
       }
     } else {
-      newCommentsArray.push({comment: comment, answers: []})
+      newCommentsArray.push(comment as CommentsWithAnswers)
     }
   }
   return newCommentsArray
 }
-

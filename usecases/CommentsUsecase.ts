@@ -3,16 +3,13 @@ import { CommentEntity, CommentInsert, CommentReactionEntity, UserEntity, WriteE
 
 export type CommentWithReactions = CommentEntity & {reactions: CommentReactionEntity[]}
 
-export type EstruturatedCommentsWithAnswers = {
-  comment: CommentWithReactions,
-  answers: Partial<CommentEntity>[],
-}
+export type CommentsWithAnswers = CommentWithReactions & {answers: CommentEntity[]}
 
 export type WithUsers<T> = T & { users: UserEntity[] } 
 
 
 export interface CommentsUsecase {
-  indexByWrite(writeId: WriteEntity['id'], page?: number, limit?: number): Promise<ApiResponse<WithUsers<PaginationData<EstruturatedCommentsWithAnswers>>>>
+  indexByWrite(writeId: WriteEntity['id'], page?: number, limit?: number): Promise<ApiResponse<WithUsers<PaginationData<CommentsWithAnswers>>>>
   store(user: UserEntity|undefined, body: CommentInsert): Promise<ApiResponse<CommentEntity>>
   update(userId: UserEntity['id']|undefined, commentId: CommentEntity['id'], body: Partial<CommentInsert>): Promise<ApiResponse<CommentEntity>>
   destroy(userId: UserEntity['id']|undefined, commentId: CommentEntity['id']): Promise<ApiResponse<CommentEntity>>
