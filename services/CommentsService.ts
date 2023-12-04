@@ -2,8 +2,7 @@ import { BaseHTTPService } from './BaseHTTPService'
 import { ApiResponse, PaginationData } from "../usecases/BaseUsecase"
 import { WriteRepository, ResponseHandler, CommentRepository } from '../contracts'
 import { WriteEntity, UserEntity, CommentEntity, CommentInsert } from '../entities'
-import { CommentsUsecase, EstruturatedCommentsWithAnswers, WithUsers } from '../usecases'
-import { CommentWithReactions } from '@ioc:forfabledomain'
+import { CommentWithReactions, CommentsUsecase, EstruturatedCommentsWithAnswers, WithUsers } from '../usecases'
 
 export class CommentsService extends BaseHTTPService implements CommentsUsecase {
   constructor(
