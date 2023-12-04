@@ -1,5 +1,5 @@
 import { UsersService, StoryAdvanceService, ReactWritesService, CommentsService, ConstantsService, DailyPromptsService, GenresService, ImageService, LoginService, MailService, PromptsService, ProposalsService, ReactCommentsService } from "."
-import { UsersController, StoryAdvanceController, ReactWritesController, CommentsController, ConstantsController, DailyPromptsController, GenresController, ImagesController, LoginController, MailController, PromptsController, ProposalsController, ReactCommentsController } from "../usecases"
+import { UsersController, ReactWritesController, CommentsController, ConstantsController, GenresController, ImagesController, LoginController, PromptsController, ProposalsController, ReactCommentsController } from "../usecases"
 
 export type AllServices = {
     CommentsService: CommentsService
@@ -20,15 +20,12 @@ export type AllServices = {
 export type AllControllers = {
     CommentsService: CommentsController
     ConstantsService: ConstantsController
-    DailyPromptsService: DailyPromptsController
     GenresService: GenresController
-    MailService: MailController
     PromptsService: PromptsController
     ProposalsService: ProposalsController
     ReactCommentsService: ReactCommentsController
     ReactWritesService: ReactWritesController
     UsersService: UsersController
-    StoryAdvanceService: StoryAdvanceController
     LoginService: LoginController
     ImageService: ImagesController
 }
