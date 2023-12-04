@@ -17,7 +17,7 @@ export class LoginService extends BaseHTTPService implements LoginUsecase {
     if (token) {
       const user = await this.userRepository.findByIdentify(identify)
       if(user){
-        const response = {...user, token: token}
+        const response = this.userRepository.putTokenInUser(user, token)
         return this.responseHandler.SuccessfullyAuthenticated(response)
       } else {
         return this.responseHandler.BadRequest()
