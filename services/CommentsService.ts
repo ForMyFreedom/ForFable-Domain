@@ -112,9 +112,11 @@ function estruturateCommentsWithAnswers(
         if(!commentOwner.answers){
           commentOwner.answers = []
         }
+        comment.answers = []
         commentOwner.answers.push(comment)
       }
     } else {
+      comment.answers = []
       newCommentsArray.push(comment as CommentsWithAnswers)
     }
   }
