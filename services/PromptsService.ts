@@ -1,10 +1,9 @@
 import { BaseHTTPService } from './BaseHTTPService'
-import { ApiResponse, Pagination } from '../usecases'
+import { ApiResponse, Pagination, PromptTrail } from '../usecases'
 import { PromptEntity, PromptInsert, UserEntity, GenreEntity, GainControlOverDailyPromptInsert, PromptEntityWithWrite } from '../entities'
 import { ResponseHandler, PromptRepository, WriteRepository, EventEmitter } from '../contracts'
 import { PromptsUsecase } from '../usecases'
 import { DailyPromptsService } from './DailyPromptsService'
-import { ProposalEntity } from '@ioc:forfabledomain'
 
 export class PromptsService extends BaseHTTPService implements PromptsUsecase {
   constructor(
@@ -114,9 +113,16 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
     }
   }
 
-  public async trailDefinitives(promptId: number): Promise<ApiResponse<ProposalEntity[]>> {
+  public async trailDefinitives(promptId: number): Promise<ApiResponse<PromptTrail>> {
     const allProposals = await this.promptsRepository.getProposals(promptId)
-    const definitives = allProposals.filter((proposal) => proposal.definitive).sort((a, b) => a.orderInHistory - b.orderInHistory)
+    const definitives = allProposals
+      .filter((proposal) => proposal.definitive)
+      .sort((a, b) => a.orderInHistory - b.orderInHistory)
+      .map((proposal) => { return {
+        userName: proposal.author.name,
+        userId: proposal.author.id,
+        proposalText: proposal.write.text
+      }})
     return this.responseHandler.SucessfullyRecovered(definitives)
   }
 

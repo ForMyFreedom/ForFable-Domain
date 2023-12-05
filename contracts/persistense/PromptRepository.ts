@@ -1,5 +1,5 @@
 import { PaginationData } from "../../usecases/BaseUsecase";
-import { PromptInsert, PromptEntity, GenreEntity, WriteEntity, ProposalEntity, PromptEntityWithWrite, UserEntity } from "../../entities";
+import { PromptInsert, PromptEntity, GenreEntity, WriteEntity, PromptEntityWithWrite, UserEntity, ProposalWithUser } from "../../entities";
 import { DefaultRepository } from "./_DefaultRepository";
 
 type ExtraInfoOnCreate = {
@@ -16,7 +16,7 @@ export interface PromptRepository extends DefaultRepository<PromptInsert & Extra
     findByWriteId(writeId: WriteEntity['id']): Promise<PromptEntity | null>
     findAllByAuthor(authorId: number, page?: number, limit?: number): Promise<PaginationData<PromptEntity>>
     getAllDailyPrompt(): Promise<PromptEntity[]>
-    getProposals(prompt: PromptEntity|PromptEntity['id']): Promise<ProposalEntity[]>
+    getProposals(prompt: PromptEntity|PromptEntity['id']): Promise<ProposalWithUser[]>
     getWrite(prompt: PromptEntity|PromptEntity['id']): Promise<WriteEntity|null>
     getAuthor(prompt: PromptEntity|PromptEntity['id']): Promise<UserEntity|null>
 }

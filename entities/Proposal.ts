@@ -1,5 +1,5 @@
 
-import { PromptEntity, WriteEntity } from "../entities"
+import { PromptEntity, UserEntity, WriteEntity } from "../entities"
 
 export type ProposalInsert = {
   text: string
@@ -18,3 +18,4 @@ export interface ProposalEntity {
 
 export type ProposalEntityWithWrite = ProposalEntity & { write: WriteEntity, promptName: string }
 export type FullProposalEntity = ProposalEntityWithWrite & { prompt: PromptEntity }
+export type ProposalWithUser = FullProposalEntity & { author: UserEntity }
