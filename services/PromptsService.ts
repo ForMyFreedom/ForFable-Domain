@@ -1,9 +1,10 @@
 import { BaseHTTPService } from './BaseHTTPService'
 import { ApiResponse, Pagination } from '../usecases'
-import { PromptEntity, PromptInsert, UserEntity, GenreEntity, GainControlOverDailyPromptInsert } from '../entities'
+import { PromptEntity, PromptInsert, UserEntity, GenreEntity, GainControlOverDailyPromptInsert, PromptEntityWithWrite } from '../entities'
 import { ResponseHandler, PromptRepository, WriteRepository, EventEmitter } from '../contracts'
 import { PromptsUsecase } from '../usecases'
 import { DailyPromptsService } from './DailyPromptsService'
+import { ProposalEntity } from '@ioc:forfabledomain'
 
 export class PromptsService extends BaseHTTPService implements PromptsUsecase {
   constructor(
@@ -18,12 +19,21 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
     return this.responseHandler.SucessfullyRecovered(response)
   }
 
-  public async show(promptId: PromptEntity['id']): Promise<ApiResponse<PromptEntity>> {
+  public async show(promptId: PromptEntity['id']): Promise<ApiResponse<PromptEntityWithWrite>> {
     const prompt = await this.promptsRepository.find(promptId)
     if (!prompt) {
       return this.responseHandler.UndefinedId()
     } else {
       return this.responseHandler.SucessfullyRecovered(prompt)
+    }
+  }
+
+  public async getAuthor(promptId: number): Promise<ApiResponse<UserEntity>> {
+    const author = await this.promptsRepository.getAuthor(promptId)
+    if(author) {
+      return this.responseHandler.SucessfullyRecovered(author)
+    } else {
+      return this.responseHandler.UndefinedId()
     }
   }
 
@@ -51,7 +61,9 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
       return this.responseHandler.UndefinedId()
     }
     const write = await this.promptsRepository.getWrite(prompt)
-
+    if(!write) {
+      return this.responseHandler.UndefinedWrite()
+    }
 
     if (write.authorId !== userId) {
       return this.responseHandler.CantEditOthersWrite()
@@ -88,12 +100,24 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
       return this.responseHandler.UndefinedId()
     }
 
-    if((await this.promptsRepository.getWrite(prompt)).authorId == userId) {
+    const write = await this.promptsRepository.getWrite(prompt)
+
+    if(!write) {
+      return this.responseHandler.UndefinedWrite()
+    }
+
+    if(write.authorId == userId) {
       const response = await this.promptsRepository.delete(promptId)
       return this.responseHandler.SucessfullyDestroyed(response)
     } else {
       return this.responseHandler.CantDeleteOthersWrite()
     }
+  }
+
+  public async trailDefinitives(promptId: number): Promise<ApiResponse<ProposalEntity[]>> {
+    const allProposals = await this.promptsRepository.getProposals(promptId)
+    const definitives = allProposals.filter((proposal) => proposal.definitive).sort((a, b) => a.orderInHistory - b.orderInHistory)
+    return this.responseHandler.SucessfullyRecovered(definitives)
   }
 
   public async appropriateDailyPrompt(userId: UserEntity['id']|undefined, promptId: PromptEntity['id'], body: GainControlOverDailyPromptInsert): Promise<ApiResponse<PromptEntity>> {
@@ -108,6 +132,10 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
     }
 
     const write = await this.promptsRepository.getWrite(prompt)
+
+    if (!write) {
+      return this.responseHandler.UndefinedWrite()
+    }
 
     if (!prompt.isDaily || write.authorId !== null) {
       return this.responseHandler.NotAppropriablePrompt()

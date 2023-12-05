@@ -1,5 +1,5 @@
 import { ApiResponse, Pagination } from '..'
-import { GainControlOverDailyPromptInsert, PromptEntity, PromptEntityWithWrite, PromptInsert, UserEntity } from '../entities'
+import { GainControlOverDailyPromptInsert, PromptEntity, PromptEntityWithWrite, PromptInsert, ProposalEntity, UserEntity } from '../entities'
 
 export interface PromptsUsecase {
   index(page?: number, limit?: number): Promise<Pagination<PromptEntity>>
@@ -10,6 +10,7 @@ export interface PromptsUsecase {
   update(authorId: undefined|UserEntity['id'], promptId: PromptEntity['id'], partialPrompt: Partial<PromptInsert>): Promise<ApiResponse<PromptEntity>>
   destroy(authorId: undefined|UserEntity['id'], promptId: PromptEntity['id']): Promise<ApiResponse<PromptEntity>>
   appropriateDailyPrompt(authorId: undefined|UserEntity['id'], promptId: PromptEntity['id'], body: GainControlOverDailyPromptInsert): Promise<ApiResponse<PromptEntity>>
+  trailDefinitives(promptId: PromptEntity['id']): Promise<ApiResponse<ProposalEntity[]>>
 }
 
 export interface PromptsController extends Omit<PromptsUsecase,'store'|'update'|'destroy'|'appropriateDailyPrompt'> {
