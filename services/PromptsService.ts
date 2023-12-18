@@ -114,16 +114,35 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
   }
 
   public async trailDefinitives(promptId: number): Promise<ApiResponse<PromptTrail>> {
+    const prompt = await this.promptsRepository.find(promptId)
+    if(!prompt) {
+      return this.responseHandler.UndefinedId()
+    }
     const allProposals = await this.promptsRepository.getProposals(promptId)
-    const definitives = allProposals
+    const allUserIds = allProposals.map((proposal) => proposal.write.authorId).filter((id) => id !== null) as number[]
+    const idToName: {[key: number]: string} = await allUserIds.reduce(async (acc, userId) => {
+      const name = await this.writeRepository.getAuthorName(userId);
+      return { ...acc, [userId]: name };
+    }, {});
+
+    const start: PromptTrail = [{
+      userName: await this.writeRepository.getAuthorName(prompt.write?.id),
+      userId: prompt.write.$original.authorId, // @wtf
+      proposalText: prompt.write.text,
+      proposalId: null,
+    }]
+
+    const definitives: PromptTrail = allProposals
       .filter((proposal) => proposal.definitive)
       .sort((a, b) => a.orderInHistory - b.orderInHistory)
       .map((proposal) => { return {
-        userName: proposal.author.name,
-        userId: proposal.author.id,
-        proposalText: proposal.write.text
+        userName: idToName[proposal.write.id],
+        userId: proposal.write.authorId,
+        proposalText: proposal.write.text,
+        proposalId: proposal.id,
       }})
-    return this.responseHandler.SucessfullyRecovered(definitives)
+    
+    return this.responseHandler.SucessfullyRecovered([...start, ...definitives])
   }
 
   public async appropriateDailyPrompt(userId: UserEntity['id']|undefined, promptId: PromptEntity['id'], body: GainControlOverDailyPromptInsert): Promise<ApiResponse<PromptEntity>> {

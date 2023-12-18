@@ -22,7 +22,7 @@ export class DailyPromptsService implements DailyPromptsUsecase {
     const allDailyPrompts = await this.promptRepository.getAllDailyPrompt()
     for (const prompt of allDailyPrompts) {
       const write = await this.promptRepository.getWrite(prompt)
-      if (write.authorId === null) {
+      if (write && write.authorId === null) {
         await this.promptRepository.delete(prompt.id)
       }
     }

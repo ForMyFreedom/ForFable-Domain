@@ -1,7 +1,7 @@
 import { BaseHTTPService } from './BaseHTTPService'
 import { Pagination, ApiResponse, GenericResponse } from '../usecases/BaseUsecase'
 import { ResponseHandler, TokenRepository, UserRepository } from '../contracts'
-import { PromptEntityWithWrite, ProposalEntityWithWrite, RestartPasswordInsert, UserEntity, UserInsert, UserUpdate } from '../entities'
+import { PromptEntityWithWrite, ProposalWithPromptName, RestartPasswordInsert, UserEntity, UserInsert, UserUpdate } from '../entities'
 import { MailUsecase, UsersUsecase } from '../usecases'
 import { prettifyErrorList } from '../utils'
 import { DateTime } from 'luxon'
@@ -19,7 +19,7 @@ export class UsersService extends BaseHTTPService implements UsersUsecase {
     return this.responseHandler.SucessfullyRecovered(response)
   }
 
-  public async indexWritesByAuthor(authorId: number, page?: number | undefined, limit?: number | undefined): Promise<Pagination<(ProposalEntityWithWrite | PromptEntityWithWrite)>> {
+  public async indexWritesByAuthor(authorId: number, page?: number | undefined, limit?: number | undefined): Promise<Pagination<(ProposalWithPromptName | PromptEntityWithWrite)>> {
     const response = await this.userRepository.indexWritesByAuthor(authorId, page, limit)
     if(response?.all) {
       response.all = response.all.sort((a, b) => {

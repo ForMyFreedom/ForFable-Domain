@@ -52,6 +52,10 @@ export class ProposalsService extends BaseHTTPService implements ProposalsUsecas
 
     const promptWrite = await this.promptRepository.getWrite(prompt)
 
+    if (!promptWrite) {
+      return this.responseHandler.UndefinedWrite()
+    }
+
     if (prompt.concluded) {
       return this.responseHandler.CantProposeToClosedHistory()
     }

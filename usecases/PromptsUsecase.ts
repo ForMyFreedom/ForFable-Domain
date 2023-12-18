@@ -3,8 +3,9 @@ import { GainControlOverDailyPromptInsert, PromptEntity, PromptEntityWithWrite, 
 
 export type PromptTrail = {
   userName: string,
-  userId: number,
-  proposalText: string
+  userId: number|null,
+  proposalText: string,
+  proposalId: number|null
 }[]
 
 export interface PromptsUsecase {

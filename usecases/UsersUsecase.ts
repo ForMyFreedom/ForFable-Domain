@@ -1,5 +1,5 @@
 import { ApiResponse, GenericResponse, Pagination } from '.'
-import { PromptEntityWithWrite, ProposalEntityWithWrite, RestartPasswordInsert, UserEntity, UserInsert, UserUpdate } from '../entities'
+import { PromptEntityWithWrite, ProposalWithPromptName, RestartPasswordInsert, UserEntity, UserInsert, UserUpdate } from '../entities'
 
 export interface UsersUsecase {
   index(page?: number, limit?: number): Promise<Pagination<UserEntity>>
@@ -10,7 +10,7 @@ export interface UsersUsecase {
   verifyEmail(token: string|undefined): Promise<ApiResponse<boolean>>
   requestPasswordChange(user: UserEntity|undefined): Promise<GenericResponse>
   restartPassword(token: string|undefined, body: RestartPasswordInsert): Promise<GenericResponse>
-  indexWritesByAuthor(authorId: UserEntity['id'], page?: number, limit?: number): Promise<Pagination<(ProposalEntityWithWrite | PromptEntityWithWrite)>>
+  indexWritesByAuthor(authorId: UserEntity['id'], page?: number, limit?: number): Promise<Pagination<(ProposalWithPromptName | PromptEntityWithWrite)>>
 }
 
 export interface UsersController extends Omit<UsersUsecase, 'store'|'update'|'destroy'> {
