@@ -127,7 +127,7 @@ export class PromptsService extends BaseHTTPService implements PromptsUsecase {
 
     const start: PromptTrail = [{
       userName: await this.writeRepository.getAuthorName(prompt.write?.id),
-      userId: prompt.write.$original.authorId, // @wtf
+      userId: prompt.write.authorId,
       proposalText: prompt.write.text,
       proposalId: null,
     }]
